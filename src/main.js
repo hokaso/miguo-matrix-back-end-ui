@@ -4,12 +4,21 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 
+import '@/icons' // 图标
+
+import '@/styles/index.scss' // 全局css样式
+
+import 'normalize.css/normalize.css' // CSS重置的现代替代方法
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+
+Vue.use(ElementUI)
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
-  components: { App },
-  template: '<App/>'
+  // 启用 ElementUI
+  render: h => h(App)
 })
