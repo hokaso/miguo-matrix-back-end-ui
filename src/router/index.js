@@ -4,7 +4,7 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 /* Layout */
-// import Layout from '@/layout'
+import Layout from '@/layout'
 
 /**
  * 注意：子菜单仅在路由children.length> = 1时出现
@@ -36,6 +36,132 @@ export const constantRoutes = [
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true
+  },
+
+  {
+    path: '/404',
+    component: () => import('@/views/404'),
+    hidden: true
+  },
+
+  {
+    path: '/',
+    component: Layout,
+    redirect: '/dashboard',
+    children: [{
+      path: 'dashboard',
+      name: 'Dashboard',
+      component: () => import('@/views/dashboard/index'),
+      meta: { title: '数据总览', icon: 'dashboard' }
+    }]
+  },
+  {
+    path: '/web_management',
+    component: Layout,
+    redirect: '/web_management/article',
+    name: 'web_management',
+    meta: { title: '官网管理', icon: 'component' },
+    children: [
+      {
+        path: 'article',
+        name: 'Article',
+        component: () => import('@/views/website/article/index'),
+        meta: { title: '文章发布', icon: 'article' }
+      },
+      {
+        path: 'video',
+        name: 'Video',
+        component: () => import('@/views/website/video/index'),
+        meta: { title: '视频发布', icon: 'video' }
+      }
+    ]
+  },
+  {
+    path: '/mp_management',
+    component: Layout,
+    redirect: '/mp_management/article',
+    name: 'mp_management',
+    meta: { title: '小程序管理', icon: 'miniprogram' },
+    children: [
+      {
+        path: 'activity',
+        name: 'Activity',
+        component: () => import('@/views/miniprogram/activity/index'),
+        meta: { title: '活动发布', icon: 'activity' }
+      },
+      {
+        path: 'group',
+        name: 'Group',
+        component: () => import('@/views/miniprogram/group/index'),
+        meta: { title: '投票对象', icon: 'group' }
+      },
+      {
+        path: 'merchant',
+        name: 'Merchant',
+        component: () => import('@/views/miniprogram/merchant/index'),
+        meta: { title: '赞助商', icon: 'merchant' }
+      },
+      {
+        path: 'note',
+        name: 'Note',
+        component: () => import('@/views/miniprogram/note/index'),
+        meta: { title: '公告栏', icon: 'note' }
+      },
+      {
+        path: 'record',
+        name: 'Record',
+        component: () => import('@/views/miniprogram/record/index'),
+        meta: { title: '投票记录（图表）', icon: 'record' }
+      },
+      {
+        path: 'swiper',
+        name: 'Swiper',
+        component: () => import('@/views/miniprogram/swiper/index'),
+        meta: { title: '轮播图', icon: 'swiper' }
+      },
+    ]
+  },
+  {
+    path: '/media_management',
+    component: Layout,
+    redirect: '/media_management/article',
+    name: 'media_management',
+    meta: { title: '媒体分发', icon: 'send' },
+    children: [
+      {
+        path: 'article',
+        name: 'Article',
+        component: () => import('@/views/media/article/index'),
+        meta: { title: '文章发布', icon: 'article' }
+      },
+      {
+        path: 'video',
+        name: 'Video',
+        component: () => import('@/views/media/video/index'),
+        meta: { title: '视频发布', icon: 'video' }
+      }
+    ]
+  },
+  {
+    path: '/admin_management',
+    component: Layout,
+    redirect: '/admin_management/verify',
+    name: 'admin_management',
+    meta: { title: '管理员', icon: 'admin' },
+    children: [
+      {
+        path: 'verify',
+        name: 'Verify',
+        component: () => import('@/views/admin/verify/index'),
+        meta: { title: '审核', icon: 'verify' }
+      },
+      {
+        path: 'subordinate',
+        name: 'Subordinate',
+        component: () => import('@/views/admin/subordinate/index'),
+        meta: { title: '人员管理', icon: 'subordinate' }
+      }
+    ]
   }
 ]
 

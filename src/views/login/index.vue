@@ -6,15 +6,15 @@
         <h3 class="title">米果新媒体矩阵管理前端</h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="nickname">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginForm.username"
+          ref="nickname"
+          v-model="loginForm.nickname"
           placeholder="请输入账号"
-          name="username"
+          name="nickname"
           type="text"
           tabindex="1"
           auto-complete="on"
@@ -50,16 +50,17 @@
 </template>
 
 <script>
+    import LoginApi from '@/api/LoginApi'
   export default {
       name: "Login",
       data() {
           return {
               loginForm: {
-                  username: '',
+                  nickname: '',
                   password: ''
               },
               loginRules: {
-                  username: [{ required: true, trigger: 'blur', message: '请输入账号！' }],
+                  nickname: [{ required: true, trigger: 'blur', message: '请输入账号！' }],
                   password: [{ required: true, trigger: 'blur', message: '请输入密码！' }]
               },
               loading: false,
@@ -90,12 +91,29 @@
               this.$refs["loginForm"].validate((valid) => {
                   if(!valid){
                       this.$message({
-                          message: '你还什么都没写呢！',
+                          message: '信息填写不完整！',
                           type: 'warning'
                       })
                       return false
                   } else {
-                      this.$router.push("/main");
+                      this.loading = true
+                      LoginApi.login(this.loginForm).then(data => {
+                          if (data === 'admin' || data === 'staff') {
+                              this.$router.push({ path: this.redirect || '/' })
+                          }
+                          else {
+                              this.$message.error('账号或者密码不正确！')
+                          }
+                          this.loading = false
+                      }).catch(err => {
+                          // debugger
+                          console.log(err)
+                          if (this.loginForm.nickname !== '' || this.loginForm.password !== '') {
+                              this.$message.warning('信息填写不完整！')
+                              return false
+                          }
+                          this.loading = false
+                      })
                   }
               })
           }

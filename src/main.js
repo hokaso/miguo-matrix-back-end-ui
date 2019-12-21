@@ -11,6 +11,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import '@/styles/index.scss' // 全局css样式
 
 import App from './App'
+import store from './store'
 import router from './router'
 
 import '@/icons' // 图标
@@ -22,6 +23,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
+  store,
   // 启用 ElementUI
   render: h => h(App)
 })
