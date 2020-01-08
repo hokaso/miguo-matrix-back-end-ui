@@ -50,7 +50,8 @@
 </template>
 
 <script>
-    import LoginApi from '@/api/LoginApi'
+import LoginApi from '@/api/LoginApi'
+import { mapGetters } from 'vuex'
   export default {
       name: "Login",
       data() {
@@ -65,8 +66,14 @@
               },
               loading: false,
               passwordType: 'password',
-              redirect: undefined
+              redirect: undefined,
+              user: []
           }
+      },
+      computed: {
+          ...mapGetters([
+              'roles',
+          ])
       },
       watch: {
           $route: {
@@ -99,6 +106,8 @@
                       this.loading = true
                       LoginApi.login(this.loginForm).then(data => {
                           if (data === 'admin' || data === 'staff') {
+                              this.user.push(data)
+                              this.$store.dispatch('user/getInfo', this.user)
                               this.$router.push({ path: this.redirect || '/' })
                           }
                           else {

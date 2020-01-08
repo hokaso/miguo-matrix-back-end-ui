@@ -7,7 +7,7 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img src="../../assets/staff_icon.png" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -35,6 +35,7 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import LoginApi from '@/api/LoginApi'
 
 export default {
   components: {
@@ -44,7 +45,6 @@ export default {
   computed: {
     ...mapGetters([
       'sidebar',
-      'avatar'
     ])
   },
   methods: {
@@ -52,7 +52,14 @@ export default {
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
-      await this.$store.dispatch('user/logout')
+      await LoginApi.logout().then(data => {
+          console.log(data)
+          this.$store.dispatch('user/userLogout')
+          this.$store.dispatch('permission/clearRoutes')
+      }).catch(err => {
+          // debugger
+          console.log(err)
+      })
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     }
   }

@@ -6,8 +6,14 @@ export default {
    * @param name
    */
   login (form) {
-    return HttpKit.post(`/login/account`, form).then(
+    return HttpKit.post(`/account/login`, form).then(
+      res => res.data
+    )
+  },
+  logout (form) {
+    return HttpKit.post(`/account/logout`, form).then(
       res => res.data
     )
   }
 }
+

@@ -33,6 +33,17 @@ import Layout from '@/layout'
 
 export const constantRoutes = [
   {
+    path: '/redirect',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '/redirect/:path*',
+        component: () => import('@/views/redirect/index')
+      }
+    ]
+  },
+  {
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true
@@ -52,7 +63,7 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '数据总览', icon: 'dashboard' }
+      meta: { title: '数据总览', icon: 'dashboard', affix: true }
     }]
   },
   {
@@ -64,13 +75,13 @@ export const constantRoutes = [
     children: [
       {
         path: 'article',
-        name: 'Article',
+        name: 'WebArticle',
         component: () => import('@/views/website/article/index'),
         meta: { title: '文章发布', icon: 'article' }
       },
       {
         path: 'video',
-        name: 'Video',
+        name: 'WebVideo',
         component: () => import('@/views/website/video/index'),
         meta: { title: '视频发布', icon: 'video' }
       }
@@ -142,25 +153,30 @@ export const constantRoutes = [
       }
     ]
   },
+]
+
+export const asyncRoutes = [
   {
     path: '/admin_management',
     component: Layout,
     redirect: '/admin_management/verify',
     name: 'admin_management',
-    meta: { title: '管理员', icon: 'admin' },
+    meta: { title: '管理员', icon: 'admin', roles: ['admin'] },
     children: [
       {
         path: 'verify',
         name: 'Verify',
         component: () => import('@/views/admin/verify/index'),
-        meta: { title: '审核', icon: 'verify' }
+        meta: { title: '审核', icon: 'verify', roles: ['admin'] }
       },
       {
         path: 'subordinate',
         name: 'Subordinate',
         component: () => import('@/views/admin/subordinate/index'),
-        meta: { title: '人员管理', icon: 'subordinate' }
-      }
+        meta: { title: '人员管理', icon: 'subordinate', roles: ['admin'] }
+      },
+      // 404 page must be placed at the end !!!
+      { path: '*', redirect: '/404', hidden: true }
     ]
   }
 ]

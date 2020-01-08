@@ -15,6 +15,7 @@ import store from './store'
 import router from './router'
 
 import '@/icons' // 图标
+import '@/permission' // permission control
 
 Vue.use(ElementUI)
 Vue.config.productionTip = false
