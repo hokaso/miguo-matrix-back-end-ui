@@ -5,7 +5,9 @@ const { showSettings, fixedHeader, sidebarLogo } = defaultSettings
 const state = {
   showSettings: showSettings,
   fixedHeader: fixedHeader,
-  sidebarLogo: sidebarLogo
+  sidebarLogo: sidebarLogo,
+  uploadUrl: 'http://localhost:9090/picture/upload/',
+  callbackUrl: 'http://localhost:9090/file/'
 }
 
 const mutations = {

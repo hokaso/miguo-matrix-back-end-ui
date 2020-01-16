@@ -85,6 +85,9 @@
             },
             clear() {
                 this.editorValue = ''
+            },
+            handleImgUpload(blobInfo, success, failure) {
+
             }
         }
     }

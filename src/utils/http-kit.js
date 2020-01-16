@@ -1,5 +1,6 @@
 import {Message} from 'element-ui'
 import axios from 'axios'
+axios.defaults.withCredentials=true;
 
 axios.defaults.baseURL = process.env.HOME_URL
 axios.defaults.timeout = 30 * 1000 // 设置接口响应时间
