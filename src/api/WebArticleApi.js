@@ -21,6 +21,11 @@ export default {
       res => res.data
     )
   },
+  findOne (id) {
+    return HttpKit.get(`/staff/article/find_one_by_id/${id}`).then(
+      res => res.data
+    )
+  },
   findAllDel (form) {
     return HttpKit.get(`/staff/article/find_all_deleted/${form.page}/${form.size}`, form).then(
       res => res.data
@@ -38,6 +43,11 @@ export default {
   },
   update (form) {
     return HttpKit.put(`/staff/article/update`, form).then(
+      res => res.data
+    )
+  },
+  upload (file) {
+    return HttpKit.post(`/picture/upload`, file).then(
       res => res.data
     )
   }

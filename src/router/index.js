@@ -69,14 +69,28 @@ export const constantRoutes = [
   {
     path: '/web_management',
     component: Layout,
-    redirect: '/web_management/article',
+    redirect: '/web_management/article/list',
     name: 'web_management',
     meta: { title: '官网管理', icon: 'component' },
     children: [
       {
-        path: 'article',
+        path: 'article/create',
+        component: () => import('@/views/website/article/create'),
+        name: 'WebArticleCreate',
+        meta: { title: '文章创建', noCache: true, activeMenu: '/web_management/article/list' },
+        hidden: true
+      },
+      {
+        path: 'article/edit/:id(\\d+)',
+        name: 'WebArticleEdit',
+        component: () => import('@/views/website/article/edit'),
+        meta: { title: '文章编辑', noCache: true, activeMenu: '/web_management/article/list' },
+        hidden: true
+      },
+      {
+        path: 'article/list',
         name: 'WebArticle',
-        component: () => import('@/views/website/article/index'),
+        component: () => import('@/views/website/article/list'),
         meta: { title: '文章发布', icon: 'article' }
       },
       {
@@ -153,6 +167,8 @@ export const constantRoutes = [
       }
     ]
   },
+  // 404 page must be placed at the end !!!
+  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 export const asyncRoutes = [
@@ -174,9 +190,7 @@ export const asyncRoutes = [
         name: 'Subordinate',
         component: () => import('@/views/admin/subordinate/index'),
         meta: { title: '人员管理', icon: 'subordinate', roles: ['admin'] }
-      },
-      // 404 page must be placed at the end !!!
-      { path: '*', redirect: '/404', hidden: true }
+      }
     ]
   }
 ]

@@ -5,9 +5,11 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+      <router-link style="margin-left: 10px;" :to="'/web_management/article/create'" class="link-type">
+      <el-button class="filter-item" type="primary" icon="el-icon-edit">
         新增
       </el-button>
+      </router-link>
     </div>
     <el-table
       :key="tableKey"
@@ -21,14 +23,15 @@
     >
       <el-table-column label="发布日期" prop="date" sortable="custom" width="200px" align="center">
         <template slot-scope="{row}">
-<!--          <span>{{ row.updateAt | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>-->
           <span>{{ row.updateAt }}</span>
         </template>
       </el-table-column>
       <el-table-column label="标题" min-width="150px" align="center">
         <template slot-scope="{row}">
           <span v-if="row.status==='已审核' || row.status==='审核中'">{{ row.title }}</span>
-          <span v-else class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
+          <router-link v-else :to="'/web_management/article/edit/'+row.id" class="link-type">
+            <span>{{ row.title }}</span>
+          </router-link>
         </template>
       </el-table-column>
       <el-table-column label="作者" width="100px" align="center">
@@ -55,9 +58,11 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="300px" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button v-if="row.status!=='已审核' && row.status!=='审核中'" type="primary" size="mini" @click="handleUpdate(row)">
-            编辑
-          </el-button>
+          <router-link style="margin-right: 10px;" v-if="row.status!=='已审核' && row.status!=='审核中'" :to="'/web_management/article/edit/'+row.id">
+            <el-button type="primary" size="mini">
+              编辑
+            </el-button>
+          </router-link>
           <el-button v-if="row.status!=='已审核' && row.status!=='审核中'" size="mini" type="success" @click="handleModifyStatus(row,'审核中')">
             提审
           </el-button>
@@ -113,11 +118,10 @@
 
 <script>
     import waves from '@/directive/waves' // waves directive
-    import { parseTime } from '@/utils'
     import Pagination from '@/components/Pagination' // secondary package based on el-pagination
     import WebArticleApi from "@/api/WebArticleApi";
     export default {
-        name: 'aaa',
+        name: 'List',
         components: { Pagination },
         directives: { waves },
         filters: {
@@ -178,6 +182,7 @@
         methods: {
             // 刷新界面
             getList() {
+                // console.log('345365464')
                 this.listLoading = true
                 WebArticleApi.findAllByKeywords(this.listQuery).then(data => {
                     this.list = data.data
@@ -193,15 +198,7 @@
                 this.listLoading = true
                 row.status = status
                 this.temp = Object.assign({}, row) // copy obj
-                WebArticleApi.update(this.temp).then(() => {
-                    for (const v of this.list) {
-                        if (v.id === this.temp.id) {
-                            const index = this.list.indexOf(v)
-                            this.list.splice(index, 1, this.temp)
-                            break
-                        }
-                    }
-                })
+                WebArticleApi.update(this.temp)
                 this.listLoading = false
                 this.$message({
                     message: '操作成功',
@@ -276,7 +273,7 @@
                             for (const v of this.list) {
                                 if (v.id === this.temp.id) {
                                     const index = this.list.indexOf(v)
-                                    this.list.splice(index, 1, this.temp)
+                                    this.list.splice(list, 1, this.temp)
                                     break
                                 }
                             }
@@ -309,8 +306,6 @@
                     type: 'success',
                     duration: 2000
                 })
-                const index = this.list.indexOf(row)
-                this.list.splice(index, 1)
             }
         }
     }

@@ -1,10 +1,11 @@
 import defaultSettings from '@/settings'
 
-const { showSettings, fixedHeader, sidebarLogo } = defaultSettings
+const { showSettings, fixedHeader, sidebarLogo,tagsView } = defaultSettings
 
 const state = {
   showSettings: showSettings,
   fixedHeader: fixedHeader,
+  tagsView: tagsView,
   sidebarLogo: sidebarLogo,
   uploadUrl: 'http://localhost:9090/picture/upload/',
   callbackUrl: 'http://localhost:9090/file/'
