@@ -30,7 +30,7 @@
       </el-table-column>
       <el-table-column label="视频标题" min-width="120px" align="center">
         <template slot-scope="{row}">
-          <span v-if="row.videoStatus==='已审核' || row.videoStatus==='审核中'">{{ row.videoTitle }}</span>
+          <span v-if="row.videoStatus==='reviewed' || row.videoStatus==='reviewing'">{{ row.videoTitle }}</span>
           <span v-else class="link-type" @click="handleUpdate(row)">{{ row.videoTitle }}</span>
         </template>
       </el-table-column>
@@ -51,31 +51,31 @@
       </el-table-column>
       <el-table-column label="审核人" width="100px" align="center">
         <template slot-scope="{row}">
-          <span style="color:orange;">{{ row.video_reviewer }}</span>
+          <span style="color:orange;">{{ row.videoReviewer }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" class-name="status-col" width="100px">
         <template slot-scope="{row}">
           <el-tag :type="row.videoStatus | statusFilter">
-            {{ row.videoStatus }}
+            {{ row.videoStatus | statusNameFilter}}
           </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="300px" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button v-if="row.videoStatus!=='已审核' && row.videoStatus!=='审核中'" type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button v-if="row.videoStatus!=='reviewed' && row.videoStatus!=='reviewing'" type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button v-if="row.videoStatus!=='已审核' && row.videoStatus!=='审核中'" size="mini" type="success" @click="handleModifyStatus(row,'审核中')">
+          <el-button v-if="row.videoStatus!=='reviewed' && row.videoStatus!=='reviewing'" size="mini" type="success" @click="handleModifyStatus(row,'reviewing')">
             提审
           </el-button>
-          <el-button v-if="row.videoStatus!=='草稿' && row.videoStatus!=='已审核'" size="mini" @click="handleModifyStatus(row,'草稿')">
+          <el-button v-if="row.videoStatus!=='draft' && row.videoStatus!=='reviewed'" size="mini" @click="handleModifyStatus(row,'draft')">
             撤回
           </el-button>
-          <el-button v-if="row.videoStatus!=='已审核' && row.videoStatus!=='审核中'" size="mini" type="danger" @click="confirmDelete(row)">
+          <el-button v-if="row.videoStatus!=='reviewed' && row.videoStatus!=='reviewing'" size="mini" type="danger" @click="confirmDelete(row)">
             删除
           </el-button>
-          <el-tag v-if="row.videoStatus==='已审核'">
+          <el-tag v-if="row.videoStatus==='reviewed'">
             已通过审核，当前权限无法进行其他操作
           </el-tag>
         </template>
@@ -146,17 +146,25 @@
 <script>
     import waves from '@/directive/waves' // waves directive
     import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-    import WebVideoApi from "@/api/WebVideoApi";
+    import WebVideoApi from "@/api/website/WebVideoApi";
     export default {
         name: 'bbb',
         components: { Pagination },
         directives: { waves },
         filters: {
+            statusNameFilter(status) {
+                const statusMap = {
+                    reviewing: '审核中',
+                    draft: '草稿',
+                    reviewed: '已审核'
+                }
+                return statusMap[status]
+            },
             statusFilter(status) {
                 const statusMap = {
-                    published: 'success',
+                    reviewing: 'warning',
+                    reviewed: 'success',
                     draft: 'info',
-                    deleted: 'danger'
                 }
                 return statusMap[status]
             }
@@ -178,10 +186,10 @@
                 // 已过审的不允许删除和存为草稿和提交审核
                 statusOptions: [{
                     label: '提交审核',
-                    value: '审核中'
+                    value: 'reviewing'
                 }, {
                     label: '存为草稿',
-                    value: '草稿'
+                    value: 'draft'
                 }],
                 showReviewer: false,
                 temp: {
@@ -190,7 +198,9 @@
                     videoTitle: '',
                     videoStatus: '',
                     videoUrl: '',
-                    videoPic: ''
+                    videoReviewer: '',
+                    videoPic: '',
+                    updateAt:''
                 },
                 dialogFormVisible: false,
                 dialogStatus: '',
@@ -287,9 +297,14 @@
             resetTemp() {
                 this.temp = {
                     id: undefined,
-                    title: '',
-                    status: '',
-                    type: ''
+                    videoAuthor: "",
+                    videoProfile: '',
+                    videoTitle: '',
+                    videoStatus: '',
+                    videoUrl: '',
+                    videoReviewer: '',
+                    videoPic: '',
+                    updateAt:''
                 }
             },
             handleCreate() {

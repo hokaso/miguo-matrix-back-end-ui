@@ -72,7 +72,7 @@
     import 'tinymce/plugins/wordcount'
     import MaterialInput from '@/components/MaterialInput'
     import Sticky from '@/components/Sticky' // 粘性header组件
-    import WebArticleApi from "@/api/WebArticleApi";
+    import WebArticleApi from "@/api/website/WebArticleApi";
     const defaultForm = {
         id: undefined,
         status: '',

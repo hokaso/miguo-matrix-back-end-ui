@@ -5,163 +5,136 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleNewRows">
         新增
       </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="confirmDeleteRows" :disabled="this.multipleSelection.length === 0">
+        批量删除
+      </el-button>
     </div>
-    <el-table
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      border
-      fit
-      highlight-current-row
-      style="width: 100%;"
-      @sort-change="sortChange"
-    >
-      <el-table-column label="发布日期" prop="date" sortable="custom" width="200px" align="center">
-        <template slot-scope="{row}">
-          <!--          <span>{{ row.updateAt | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>-->
-          <span>{{ row.updateAt }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="视频标题" min-width="120px" align="center">
-        <template slot-scope="{row}">
-          <span v-if="row.videoStatus==='已审核' || row.videoStatus==='审核中'">{{ row.videoTitle }}</span>
-          <span v-else class="link-type" @click="handleUpdate(row)">{{ row.videoTitle }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="创作团队" width="100px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.videoAuthor }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="视频链接" width="100px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.videoUrl }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="视频简介" max-width="100px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.videoProfile }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="审核人" width="100px" align="center">
-        <template slot-scope="{row}">
-          <span style="color:orange;">{{ row.video_reviewer }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" class-name="status-col" width="100px">
-        <template slot-scope="{row}">
-          <el-tag :type="row.videoStatus | statusFilter">
-            {{ row.videoStatus }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="300px" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button v-if="row.videoStatus!=='已审核' && row.videoStatus!=='审核中'" type="primary" size="mini" @click="handleUpdate(row)">
-            编辑
-          </el-button>
-          <el-button v-if="row.videoStatus!=='已审核' && row.videoStatus!=='审核中'" size="mini" type="success" @click="handleModifyStatus(row,'审核中')">
-            提审
-          </el-button>
-          <el-button v-if="row.videoStatus!=='草稿' && row.videoStatus!=='已审核'" size="mini" @click="handleModifyStatus(row,'草稿')">
-            撤回
-          </el-button>
-          <el-button v-if="row.videoStatus!=='已审核' && row.videoStatus!=='审核中'" size="mini" type="danger" @click="confirmDelete(row)">
-            删除
-          </el-button>
-          <el-tag v-if="row.videoStatus==='已审核'">
-            已通过审核，当前权限无法进行其他操作
-          </el-tag>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-table-editabled v-model="tableData" :columns="['activityName', 'activityProfile', 'activityActive']" ref="editTable">
+      <el-table
+        :key="tableKey"
+        v-loading="listLoading"
+        :data="tableData"
+        border
+        fit
+        highlight-current-row
+        style="width: 100%;"
+        @sort-change="sortChange"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="50px" align="center">
+        </el-table-column>
+        <el-table-column label="发布日期" prop="date" sortable="custom" width="200px" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.updateAt }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="活动名称" min-width="80px" align="center">
+          <template slot-scope="{row}">
+            <el-table-editabled-cell :row="row" prop="activityName">
+              <template slot-scope="{ rowStates, validateOwn }">
+                <span v-show="!rowStates.editing">{{row.activityName}}</span>
+                <el-input v-show="rowStates.editing" v-model="row.activityName" clearable @input="validateOwn">
+                </el-input>
+              </template>
+            </el-table-editabled-cell>
+          </template>
+        </el-table-column>
+        <el-table-column label="活动简介" min-width="200px" align="center">
+          <template slot-scope="{row}">
+            <el-table-editabled-cell :row="row" prop="activityProfile">
+              <template slot-scope="{ rowStates, validateOwn }">
+                <span v-show="!rowStates.editing">{{row.activityProfile}}</span>
+                <el-input v-show="rowStates.editing" v-model="row.activityProfile" clearable @input="validateOwn">
+                </el-input>
+              </template>
+            </el-table-editabled-cell>
+          </template>
+        </el-table-column>
+        <el-table-column label="活动状态" class-name="status-col" width="120px">
+          <template slot-scope="{row}">
+            <el-table-editabled-cell :row="row" prop="activityActive">
+              <template slot-scope="{ rowStates, validateOwn }">
+                <el-select v-if="rowStates.editing" v-model="row.activityActive" class="filter-item" placeholder="启用活动/停用活动" clearable @change="validateOwn">
+                  <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+                <el-tag v-else :type="row.activityActive | statusFilter">
+                  {{ row.activityActive | statusNameFilter}}
+                </el-tag>
+              </template>
+            </el-table-editabled-cell>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="300px" class-name="small-padding fixed-width">
+          <template slot-scope="{row}">
+            <el-table-editabled-cell :row="row">
+              <template slot-scope="{ rowStates }">
+                <el-button v-if="!rowStates.editing" type="primary" size="mini" @click="editRow(row)">
+                  编辑
+                </el-button>
+                <el-button v-if="!rowStates.editing" size="mini" type="danger" @click="delOne(row)">
+                  删除
+                </el-button>
+                <el-button v-if="rowStates.editing && row.isDel" size="mini" type="success" @click="createRow(row)">
+                  保存
+                </el-button>
+                <el-button v-if="rowStates.editing && row.isDel" size="mini" @click="createCancelRow(row)">
+                  取消
+                </el-button>
+                <el-button v-if="rowStates.editing && !row.isDel" size="mini" type="success" @click="updateRow(row)">
+                  更新
+                </el-button>
+                <el-button v-if="rowStates.editing && !row.isDel" size="mini" @click="updateCancelRow(row)">
+                  撤销
+                </el-button>
+              </template>
+            </el-table-editabled-cell>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-table-editabled>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :size.sync="listQuery.size" @pagination="getList" />
-
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="视频标题" prop="videoTitle">
-          <el-input v-model="temp.videoTitle" />
-        </el-form-item>
-        <el-form-item label="创作团队" prop="author">
-          <el-input v-model="temp.videoAuthor" />
-        </el-form-item>
-        <el-form-item label="视频简介" prop="profile">
-          <el-input v-model="temp.videoProfile" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入简介" />
-        </el-form-item>
-        <el-form-item label="视频链接" prop="url">
-          <el-input v-model="temp.videoUrl" />
-        </el-form-item>
-        <!--        <el-form-item label="视频封面" prop="pic">-->
-        <!--          <el-input v-model="temp.videoPic" />-->
-        <!--        </el-form-item>-->
-
-        <el-form-item label="视频封面">
-          <el-upload
-            :action="this.$store.state.settings.uploadUrl"
-            :show-file-list="false"
-            :on-success="answerPicImageSuccess"
-            :before-upload="beforeUpload"
-            drag
-            prop="pic"
-            accept="image/png,image/gif,image/jpg,image/jpeg"
-            class="upload-demo" style="margin-top: 5%">
-            <img v-if="answerPicImageUrl" :src="answerPicImageUrl">
-            <i class="el-icon-upload"></i>
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-          </el-upload>
-        </el-form-item>
-
-        <el-form-item label="视频状态" prop="videoStatus">
-          <el-select v-model="temp.videoStatus" class="filter-item" placeholder="保存草稿/提交审核">
-            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          取消
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          确认
-        </el-button>
-      </div>
-    </el-dialog>
-    <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
-      <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="delVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleDelete(row)" >确 定</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
     import waves from '@/directive/waves' // waves directive
     import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-    import WebVideoApi from "@/api/WebVideoApi";
+    import MpActivityApi from "@/api/miniprogram/MpActivityApi";
     export default {
-        name: 'bbb',
+        name: 'MpActivity',
         components: { Pagination },
         directives: { waves },
         filters: {
             statusFilter(status) {
                 const statusMap = {
-                    published: 'success',
-                    draft: 'info',
-                    deleted: 'danger'
+                    true: 'success',
+                    false: 'danger',
                 }
                 return statusMap[status]
+            },
+            statusNameFilter(status) {
+                const statusMap = {
+                    true: '活跃',
+                    false: '已停用',
+                }
+                return statusMap[status]
+            },
+        },
+        computed: {
+            editTable () {
+                return this.$refs.editTable
             }
         },
         data() {
             return {
+                multipleSelection: [],
+                isUpdate: true,
                 delVisible: false,
                 tableKey: 0,
-                list: null,
+                tableData: [],
                 total: 0,
                 listLoading: true,
                 listQuery: {
@@ -170,35 +143,25 @@
                     keywords: "",
                     direction: 'DESC'
                 },
-                // 已过审的不允许删除和存为草稿和提交审核
+                // 改变活动状态
                 statusOptions: [{
-                    label: '提交审核',
-                    value: '审核中'
+                    label: '启用',
+                    value: true
                 }, {
-                    label: '存为草稿',
-                    value: '草稿'
+                    label: '停用',
+                    value: false
                 }],
-                showReviewer: false,
                 temp: {
-                    videoAuthor: "",
-                    videoProfile: '',
-                    videoTitle: '',
-                    videoStatus: '',
-                    videoUrl: '',
-                    videoPic: ''
-                },
-                dialogFormVisible: false,
-                dialogStatus: '',
-                textMap: {
-                    update: '编辑',
-                    create: '创建'
+                    activityName: "",
+                    updateAt: '',
+                    activityActive: '',
+                    activityProfile: '',
+                    isDel: ''
                 },
                 rules: {
                     videoTitle: [{ required: true, message: '标题为必填项', trigger: 'blur' }],
                     videoStatus: [{ required: true, message: '状态为必填项', trigger: 'change' }],
                 },
-                downloadLoading: false,
-                answerPicImageUrl: ''
             }
         },
         created() {
@@ -208,147 +171,128 @@
             // 刷新界面
             getList() {
                 this.listLoading = true
-                WebVideoApi.findAllByKeywords(this.listQuery).then(data => {
-                    this.list = data.data
+                MpActivityApi.findAllByKeywords(this.listQuery).then(data => {
+                    this.tableData = data.data
                     this.total = data.total;
                 })
                 this.listLoading = false
             },
+            // 创建选中行的数组
+            handleSelectionChange (row) {
+                console.log(row)
+                this.multipleSelection = row
+            },
+            // 每次变动排序后的刷新
             handleFilter() {
                 this.listQuery.page = 1
                 this.getList()
             },
-            handleModifyStatus(row, status) {
-                this.listLoading = true
-                row.videoStatus = status
-                this.temp = Object.assign({}, row) // copy obj
-                WebVideoApi.update(this.temp).then(() => {
-                    for (const v of this.list) {
-                        if (v.id === this.temp.id) {
-                            const index = this.list.indexOf(v)
-                            this.list.splice(index, 1, this.temp)
-                            break
-                        }
-                    }
-                })
-                this.listLoading = false
-                this.$message({
-                    message: '操作成功',
-                    type: 'success'
-                })
-            },
+            // 触发排序
             sortChange(data) {
-
                 const { prop, order } = data
                 if (prop === 'date') {
                     this.sortByID(order)
                 }
             },
+            // 回传排序顺序
             sortByID(order) {
                 if (order === 'ascending') {
                     this.listQuery.direction = 'ASC'
                 } else {
                     this.listQuery.direction = 'DESC'
                 }
-                // console.log(this.listQuery.direction)
                 this.handleFilter()
             },
+            // 重置行元素
             resetTemp() {
                 this.temp = {
                     id: undefined,
-                    title: '',
-                    status: '',
-                    type: ''
+                    activityName: "",
+                    updateAt: '',
+                    activityActive: '',
+                    activityProfile: '',
+                    isDel: ''
                 }
             },
-            handleCreate() {
+            // 点击新增之后的事件
+            handleNewRows () {
+                this.isUpdate = false
                 this.resetTemp()
-                this.dialogStatus = 'create'
-                this.dialogFormVisible = true
-                this.$nextTick(() => {
-                    this.$refs['dataForm'].clearValidate()
-                })
+                const newRow = this.temp
+                this.editTable.newRows([newRow])
+                newRow.isDel = true
             },
-            createData() {
-                this.$refs['dataForm'].validate((valid) => {
+            // 点击新增、再点击保存之后的事件，用于返回新增数据，需调用add方法
+            createRow (row) {
+                this.$refs.editTable.validateRows([row], valid => {
+                    // valid 为布尔值，代表表格正在编辑的所有字段是否验证通过
                     if (valid) {
-                        WebVideoApi.add(this.temp).then(() => {
-                            this.list.unshift(this.temp)
-                            this.dialogFormVisible = false
+                        const tempData = Object.assign({}, row)
+                        MpActivityApi.add(tempData).then(() => {
+                            // this.tableData.unshift(tempData)
                             this.$notify({
                                 title: 'success',
                                 message: '创建成功',
                                 type: 'success',
                                 duration: 2000
                             })
+                            this.getList()
                         })
                     }
                 })
+
             },
-            handleUpdate(row) {
-                this.temp = Object.assign({}, row) // copy obj
-                this.answerPicImageUrl = this.$store.state.settings.callbackUrl + this.temp.videoPic
-                this.dialogStatus = 'update'
-                this.dialogFormVisible = true
-                this.$nextTick(() => {
-                    this.$refs['dataForm'].clearValidate()
-                })
+            // 点击编辑之后的状态，使某行数据可编辑
+            editRow (row) {
+                this.editTable.editRows([row])
             },
-            updateData() {
-                this.$refs['dataForm'].validate((valid) => {
+            // 点击更新之后，将数据上传到后端，并且更新前端数据
+            updateRow (row) {
+                this.editTable.validateRows([row],valid => {
                     if (valid) {
-                        const tempData = Object.assign({}, this.temp)
-                        WebVideoApi.update(tempData).then(() => {
-                            for (const v of this.list) {
-                                if (v.id === this.temp.id) {
-                                    const index = this.list.indexOf(v)
-                                    this.list.splice(index, 1, this.temp)
-                                    break
-                                }
-                            }
-                            this.dialogFormVisible = false
+                        const tempData = Object.assign({}, row)
+                        MpActivityApi.update(tempData).then(() => {
                             this.$notify({
                                 title: 'success',
                                 message: '更新成功',
                                 type: 'success',
                                 duration: 2000
                             })
+                            this.getList()
                         })
                     }
                 })
             },
-
-            confirmDelete(row) {
-                // this.delVisible = true
+            // 点击撤销之后，还原目标行状态
+            updateCancelRow (row) {
+                this.editTable.cancelRows([row])
+            },
+            // 点击取消后，删除对应空行
+            createCancelRow (row) {
+                this.editTable.delRows([row])
+            },
+            // 删除二次确认
+            confirmDeleteRows () {
                 if(confirm('确定要删除吗')===true){
-                    this.handleDelete(row)
+                    this.deleteGroup()
                 }
             },
-            handleDelete(row) {
-                WebVideoApi.delOne(row.id).then(data => {
+            // 删除选中数据
+            deleteGroup () {
+                MpActivityApi.del(this.multipleSelection).then(data => {
+                    console.log(data)
                     this.getList()
                 })
-                this.$notify({
-                    title: 'Success',
-                    message: '成功删除',
-                    type: 'success',
-                    duration: 2000
+            },
+            // 删除某行数据（无需确认）
+            delOne (row) {
+                console.log(row)
+                this.multipleSelection.push(row)
+                MpActivityApi.del(this.multipleSelection).then(data => {
+                    console.log(data)
+                    this.getList()
                 })
-                const index = this.list.indexOf(row)
-                this.list.splice(index, 1)
-            },
-            answerPicImageSuccess (res, file) {
-                this.temp.videoPic = res.data
-                this.answerPicImageUrl = URL.createObjectURL(file.raw)
-            },
-            beforeUpload (file) {
-                // 只允许上传8M以内大小的图片
-                const isLt8M = file.size / 1024 / 1024 < 8;
-                if (!isLt8M) {
-                    this.$message.error('上传头像图片大小不能超过8MB!');
-                }
-                return isLt8M;
-            },
+            }
         }
     }
 </script>

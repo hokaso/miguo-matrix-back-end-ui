@@ -119,7 +119,7 @@
 <script>
     import waves from '@/directive/waves' // waves directive
     import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-    import WebArticleApi from "@/api/WebArticleApi";
+    import WebArticleApi from "@/api/website/WebArticleApi";
     export default {
         name: 'List',
         components: { Pagination },
@@ -182,7 +182,6 @@
         methods: {
             // 刷新界面
             getList() {
-                // console.log('345365464')
                 this.listLoading = true
                 WebArticleApi.findAllByKeywords(this.listQuery).then(data => {
                     this.list = data.data
@@ -206,7 +205,6 @@
                 })
             },
             sortChange(data) {
-
                 const { prop, order } = data
                 console.log(order)
                 console.log(prop)
@@ -243,7 +241,8 @@
             createData() {
                 this.$refs['dataForm'].validate((valid) => {
                     if (valid) {
-                        WebArticleApi.add(this.temp).then(() => {
+                        WebArticleApi.add(this.temp).then(data => {
+                            console.log(data)
                             this.list.unshift(this.temp)
                             this.getList()
                             this.dialogFormVisible = false
@@ -270,13 +269,6 @@
                     if (valid) {
                         const tempData = Object.assign({}, this.temp)
                         WebArticleApi.update(tempData).then(() => {
-                            for (const v of this.list) {
-                                if (v.id === this.temp.id) {
-                                    const index = this.list.indexOf(v)
-                                    this.list.splice(list, 1, this.temp)
-                                    break
-                                }
-                            }
                             this.getList()
                             this.dialogFormVisible = false
                             this.$notify({
@@ -289,7 +281,6 @@
                     }
                 })
             },
-
             confirmDelete(row) {
                 // this.delVisible = true
                 if(confirm('确定要删除吗')===true){
@@ -298,6 +289,7 @@
             },
             handleDelete(row) {
                 WebArticleApi.delOne(row.id).then(data => {
+                    console.log(data)
                     this.getList()
                 })
                 this.$notify({

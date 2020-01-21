@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import LoginApi from '@/api/LoginApi'
+import LoginApi from '@/api/website/LoginApi'
 import { mapGetters } from 'vuex'
   export default {
       name: "Login",

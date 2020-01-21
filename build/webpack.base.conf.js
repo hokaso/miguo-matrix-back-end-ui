@@ -3,10 +3,14 @@ const path = require('path')
 const utils = require('./utils')
 const config = require('../config')
 const vueLoaderConfig = require('./vue-loader.conf')
+const fs = require('fs')
 
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
 }
+
+let dirsName = fs.readdirSync(resolve('node_modules')).filter(dirName => /el-table-editabled/.test(dirName))
+const includesDirs = dirsName.map(dir => resolve(`node_modules/${dir}/src`))
 
 const createLintingRule = () => ({
   // test: /\.(js|vue)$/,
@@ -49,7 +53,7 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
+        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client'), ...includesDirs]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,

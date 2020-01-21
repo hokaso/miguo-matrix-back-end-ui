@@ -27,12 +27,12 @@ export default {
     )
   },
   findAllDel (form) {
-    return HttpKit.get(`/staff/article/find_all_deleted/${form.page}/${form.size}`, form).then(
+    return HttpKit.get(`/staff/article/find_all_deleted/${form.page-1}/${form.size}`, form).then(
       res => res.data
     )
   },
   findAllExist (form) {
-    return HttpKit.get(`/staff/article/find_all_exist/${form.page}/${form.size}`, form).then(
+    return HttpKit.get(`/staff/article/find_all_exist/${form.page-1}/${form.size}`, form).then(
       res => res.data
     )
   },
