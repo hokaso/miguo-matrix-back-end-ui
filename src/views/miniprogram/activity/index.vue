@@ -57,10 +57,10 @@
           <template slot-scope="{row}">
             <el-table-editabled-cell :row="row" prop="activityActive">
               <template slot-scope="{ rowStates, validateOwn }">
-                <el-select v-if="rowStates.editing" v-model="row.activityActive" class="filter-item" placeholder="启用活动/停用活动" clearable @change="validateOwn">
+                <el-select v-show="rowStates.editing" v-model="row.activityActive" class="filter-item" placeholder="启用活动/停用活动" clearable @change="validateOwn">
                   <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
-                <el-tag v-else :type="row.activityActive | statusFilter">
+                <el-tag v-show="!rowStates.editing" :type="row.activityActive | statusFilter">
                   {{ row.activityActive | statusNameFilter}}
                 </el-tag>
               </template>
@@ -203,21 +203,10 @@
                 }
                 this.handleFilter()
             },
-            // 重置行元素
-            resetTemp() {
-                this.temp = {
-                    id: undefined,
-                    activityName: "",
-                    updateAt: '',
-                    activityActive: '',
-                    activityProfile: '',
-                    isDel: ''
-                }
-            },
             // 点击新增之后的事件
             handleNewRows () {
                 this.isUpdate = false
-                this.resetTemp()
+                Object.keys(this.temp).forEach(key => (this.temp[key] = ''))
                 const newRow = this.temp
                 this.editTable.newRows([newRow])
                 newRow.isDel = true

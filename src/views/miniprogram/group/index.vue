@@ -12,7 +12,7 @@
         批量删除
       </el-button>
     </div>
-    <el-table-editabled v-model="tableData" :columns="['activityName', 'activityProfile', 'activityActive']" ref="editTable">
+    <el-table-editabled v-model="tableData" :columns="['groupName', 'groupProfile', 'groupPicHd', 'activityName', 'activityId']" ref="editTable">
       <el-table
         :key="tableKey"
         v-loading="listLoading"
@@ -31,38 +31,70 @@
             <span>{{ row.updateAt }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="活动名称" min-width="80px" align="center">
+        <el-table-column label="小组名称" min-width="80px" align="center">
           <template slot-scope="{row}">
-            <el-table-editabled-cell :row="row" prop="activityName">
+            <el-table-editabled-cell :row="row" prop="groupName">
               <template slot-scope="{ rowStates, validateOwn }">
-                <span v-show="!rowStates.editing">{{row.activityName}}</span>
-                <el-input v-show="rowStates.editing" v-model="row.activityName" clearable @input="validateOwn">
+                <span v-show="!rowStates.editing">{{row.groupName}}</span>
+                <el-input v-show="rowStates.editing" v-model="row.groupName" clearable @input="validateOwn">
                 </el-input>
               </template>
             </el-table-editabled-cell>
           </template>
         </el-table-column>
-        <el-table-column label="活动简介" min-width="200px" align="center">
+        <el-table-column label="小组简介" min-width="200px" align="center">
           <template slot-scope="{row}">
-            <el-table-editabled-cell :row="row" prop="activityProfile">
+            <el-table-editabled-cell :row="row" prop="groupProfile">
               <template slot-scope="{ rowStates, validateOwn }">
-                <span v-show="!rowStates.editing">{{row.activityProfile}}</span>
-                <el-input v-show="rowStates.editing" v-model="row.activityProfile" clearable @input="validateOwn">
+                <span v-show="!rowStates.editing">{{row.groupProfile}}</span>
+                <el-input v-show="rowStates.editing" v-model="row.groupProfile" clearable @input="validateOwn">
                 </el-input>
               </template>
             </el-table-editabled-cell>
           </template>
         </el-table-column>
-        <el-table-column label="活动状态" class-name="status-col" width="120px">
+        <el-table-column label="小组获票数" min-width="100px" align="center">
           <template slot-scope="{row}">
-            <el-table-editabled-cell :row="row" prop="activityActive">
+            <span>{{ row.groupVotes }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="小组图片" min-width="100px" align="center">
+          <template slot-scope="{row}">
+            <el-button v-show="!row.groupPicHd" type="primary" size="mini" @click="imageCropperShow(row)">
+              上传图片
+            </el-button>
+            <el-button v-show="row.groupPicHd" type="primary" size="mini" @click="imageCropperShow(row)">
+              更新图片
+            </el-button>
+            <el-button v-show="row.groupPicHd" type="primary" size="mini" @click="picShow(row.groupPicHd)">
+              预览
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column label="小组对应活动" min-width="100px" align="center">
+          <template slot-scope="{row}">
+            <el-table-editabled-cell :row="row" prop="activityId">
               <template slot-scope="{ rowStates, validateOwn }">
-                <el-select v-if="rowStates.editing" v-model="row.activityActive" class="filter-item" placeholder="启用活动/停用活动" clearable @change="validateOwn">
-                  <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+                <el-select
+                  v-show="rowStates.editing"
+                  v-model="row.activityId"
+                  class="filter-item"
+                  filterable
+                  remote
+                  reserve-keyword
+                  clearable
+                  placeholder="请选择对应活动"
+                  :remote-method="remoteMethod"
+                  :loading="loading"
+                  @change="validateOwn">
+                  <el-option
+                    v-for="item in options"
+                    :key="item.id"
+                    :label="item.activityName"
+                    :value="item.id">
+                  </el-option>
                 </el-select>
-                <el-tag v-else :type="row.activityActive | statusFilter">
-                  {{ row.activityActive | statusNameFilter}}
-                </el-tag>
+                <span v-show="!rowStates.editing">{{row.activityName}}</span>
               </template>
             </el-table-editabled-cell>
           </template>
@@ -96,16 +128,45 @@
       </el-table>
     </el-table-editabled>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :size.sync="listQuery.size" @pagination="getList" />
+    <my-upload
+      method="POST"
+      field="file"
+      v-model="cropperShow"
+      :width=640
+      :height=360
+      :url="this.$store.state.settings.mpUploadUrl"
+      lang-type='zh'
+      img-format='jpg'
+      img-bgc='#FFF'
+      :no-circle=true
+      @crop-upload-success="cropUploadSuccess">
+    </my-upload>
+    <el-dialog title="图片预览" :visible.sync="picVisible" width="720px" center>
+      <h3>
+        大图
+      </h3>
+      <img :src="answerPicImageUrl">
+      <h3>
+        小图
+      </h3>
+      <img :src="mpAnswerPicImageUrl">
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="picVisible = false">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
     import waves from '@/directive/waves' // waves directive
     import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+    import MpGroupApi from "@/api/miniprogram/MpGroupApi";
     import MpActivityApi from "@/api/miniprogram/MpActivityApi";
+    import 'babel-polyfill'; // es6 shim
+    import myUpload from 'vue-image-crop-upload'
     export default {
-        name: 'MpActivity',
-        components: { Pagination },
+        name: 'MpGroup',
+        components: { Pagination, myUpload },
         directives: { waves },
         filters: {
             statusFilter(status) {
@@ -130,11 +191,16 @@
         },
         data() {
             return {
+                answerPicImageUrl: "",
+                mpAnswerPicImageUrl: "",
+                picVisible: false,
+                loading: false,
+                cropperShow: false,
                 multipleSelection: [],
                 isUpdate: true,
-                delVisible: false,
                 tableKey: 0,
                 tableData: [],
+                options: [],
                 total: 0,
                 listLoading: true,
                 listQuery: {
@@ -152,11 +218,15 @@
                     value: false
                 }],
                 temp: {
-                    activityName: "",
+                    groupName: "",
                     updateAt: '',
-                    activityActive: '',
-                    activityProfile: '',
-                    isDel: ''
+                    groupProfile: '',
+                    groupVotes: '',
+                    groupPic: '',
+                    groupPicHd: '',
+                    isDel: '',
+                    activityId: '',
+                    activityName: ''
                 },
                 rules: {
                     videoTitle: [{ required: true, message: '标题为必填项', trigger: 'blur' }],
@@ -168,10 +238,46 @@
             this.getList()
         },
         methods: {
+            // 选择活动时，用于根据关键字查找活动
+            remoteMethod (query) {
+                if (query === '') {
+                    this.options = []
+                    return
+                }
+                this.loading = true
+                MpActivityApi.findAllByKeywordsFromInput(query).then(data => {
+                    this.loading = false
+                    this.options = data
+                })
+            },
+            // 显示图片上传模块
+            imageCropperShow(row) {
+                this.cropperShow = !this.cropperShow
+                this.temp = Object.assign({}, row) // copy obj
+            },
+            // 图片上传成功后执行
+            cropUploadSuccess(jsonData, field){
+                this.temp.groupPicHd = jsonData.data
+                const tempData = Object.assign({}, this.temp)
+                MpGroupApi.update(tempData).then(() => {
+                    this.$notify({
+                        title: 'success',
+                        message: '图片上传成功',
+                        type: 'success',
+                        duration: 2000
+                    })
+                    this.getList()
+                })
+            },
+            picShow(pic) {
+                this.picVisible = !this.picVisible
+                this.answerPicImageUrl = this.$store.state.settings.callbackUrl + pic
+                this.mpAnswerPicImageUrl = this.$store.state.settings.mpCallbackUrl + pic
+            },
             // 刷新界面
             getList() {
                 this.listLoading = true
-                MpActivityApi.findAllByKeywords(this.listQuery).then(data => {
+                MpGroupApi.findAllByKeywords(this.listQuery).then(data => {
                     this.tableData = data.data
                     this.total = data.total;
                 })
@@ -179,7 +285,6 @@
             },
             // 创建选中行的数组
             handleSelectionChange (row) {
-                console.log(row)
                 this.multipleSelection = row
             },
             // 每次变动排序后的刷新
@@ -203,21 +308,10 @@
                 }
                 this.handleFilter()
             },
-            // 重置行元素
-            resetTemp() {
-                this.temp = {
-                    id: undefined,
-                    activityName: "",
-                    updateAt: '',
-                    activityActive: '',
-                    activityProfile: '',
-                    isDel: ''
-                }
-            },
             // 点击新增之后的事件
             handleNewRows () {
                 this.isUpdate = false
-                this.resetTemp()
+                Object.keys(this.temp).forEach(key => (this.temp[key] = ''))
                 const newRow = this.temp
                 this.editTable.newRows([newRow])
                 newRow.isDel = true
@@ -228,7 +322,7 @@
                     // valid 为布尔值，代表表格正在编辑的所有字段是否验证通过
                     if (valid) {
                         const tempData = Object.assign({}, row)
-                        MpActivityApi.add(tempData).then(() => {
+                        MpGroupApi.add(tempData).then(() => {
                             // this.tableData.unshift(tempData)
                             this.$notify({
                                 title: 'success',
@@ -244,6 +338,12 @@
             },
             // 点击编辑之后的状态，使某行数据可编辑
             editRow (row) {
+                if(row.activityId !== ""){
+                    MpActivityApi.findOne(row.activityId).then(data => {
+                        this.options = []
+                        this.options.push(data)
+                    })
+                }
                 this.editTable.editRows([row])
             },
             // 点击更新之后，将数据上传到后端，并且更新前端数据
@@ -251,7 +351,7 @@
                 this.editTable.validateRows([row],valid => {
                     if (valid) {
                         const tempData = Object.assign({}, row)
-                        MpActivityApi.update(tempData).then(() => {
+                        MpGroupApi.update(tempData).then(() => {
                             this.$notify({
                                 title: 'success',
                                 message: '更新成功',
@@ -279,7 +379,7 @@
             },
             // 删除选中数据
             deleteGroup () {
-                MpActivityApi.del(this.multipleSelection).then(data => {
+                MpGroupApi.del(this.multipleSelection).then(data => {
                     console.log(data)
                     this.getList()
                 })
@@ -288,7 +388,7 @@
             delOne (row) {
                 console.log(row)
                 this.multipleSelection.push(row)
-                MpActivityApi.del(this.multipleSelection).then(data => {
+                MpGroupApi.del(this.multipleSelection).then(data => {
                     console.log(data)
                     this.getList()
                 })

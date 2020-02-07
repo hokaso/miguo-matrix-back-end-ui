@@ -21,8 +21,8 @@ export default {
       res => res.data
     )
   },
-  findAllByKeywordsFromInput (form) {
-    return HttpKit.post(`/staff_miniprogram/mp_activity/find_all_by_keywords_from_input`, form).then(
+  findAllByKeywordsFromInput (name) {
+    return HttpKit.get(`/staff_miniprogram/mp_activity/find_all_by_keywords_from_input/${name}`).then(
       res => res.data
     )
   },
@@ -33,6 +33,11 @@ export default {
   },
   upload (file) {
     return HttpKit.post(`/picture/upload`, file).then(
+      res => res.data
+    )
+  },
+  findOne (id) {
+    return HttpKit.get(`/staff_miniprogram/mp_activity/find_activity_id/${id}`).then(
       res => res.data
     )
   }

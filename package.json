@@ -13,6 +13,7 @@
   "dependencies": {
     "@tinymce/tinymce-vue": "^3.0.1",
     "axios": "^0.19.0",
+    "babel-polyfill": "^6.26.0",
     "el-table-editabled": "^1.0.27",
     "element-ui": "^2.13.0",
     "js-cookie": "^2.2.1",
@@ -22,6 +23,7 @@
     "path-to-regexp": "latest",
     "tinymce": "^5.1.5",
     "vue": "^2.5.2",
+    "vue-image-crop-upload": "^2.5.0",
     "vue-material-input": "^1.2.0",
     "vue-router": "3.0.6",
     "vuex": "^3.1.2"

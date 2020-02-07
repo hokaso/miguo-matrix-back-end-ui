@@ -221,17 +221,8 @@
                 console.log(this.listQuery.direction)
                 this.handleFilter()
             },
-            resetTemp() {
-                this.temp = {
-                    id: undefined,
-                    title: '',
-                    status: '',
-                    type: '',
-                    updateAt: ''
-                }
-            },
             handleCreate() {
-                this.resetTemp()
+                Object.keys(this.temp).forEach(key => (this.temp[key] = ''))
                 this.dialogStatus = 'create'
                 this.dialogFormVisible = true
                 this.$nextTick(() => {

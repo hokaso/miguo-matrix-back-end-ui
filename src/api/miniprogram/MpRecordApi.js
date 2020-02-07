@@ -7,22 +7,22 @@ export default {
    * @param form
    */
   add (form) {
-    return HttpKit.post(`/staff_miniprogram/mp_group/add`, form).then(
+    return HttpKit.post(`/staff_miniprogram/mp_record/add`, form).then(
       res => res.data
     )
   },
   del (list) {
-    return HttpKit.post(`/staff_miniprogram/mp_group/delete/`,list).then(
+    return HttpKit.post(`/staff_miniprogram/mp_record/delete/`,list).then(
       res => res.data
     )
   },
   findAllByKeywords (form) {
-    return HttpKit.post(`/staff_miniprogram/mp_group/find_all_by_keywords`, form).then(
+    return HttpKit.post(`/staff_miniprogram/mp_record/find_all_by_keywords`, form).then(
       res => res.data
     )
   },
   update (form) {
-    return HttpKit.put(`/staff_miniprogram/mp_group/update`, form).then(
+    return HttpKit.put(`/staff_miniprogram/mp_record/update`, form).then(
       res => res.data
     )
   },

@@ -8,7 +8,9 @@ const state = {
   tagsView: tagsView,
   sidebarLogo: sidebarLogo,
   uploadUrl: 'http://localhost:9090/picture/upload/',
-  callbackUrl: 'http://localhost:9090/file/'
+  mpUploadUrl: 'http://localhost:9090/picture/upload_mp/',
+  callbackUrl: 'http://localhost:9090/file/',
+  mpCallbackUrl: 'http://localhost:9090/file/thumbnails/mp'
 }
 
 const mutations = {

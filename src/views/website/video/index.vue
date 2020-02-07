@@ -97,11 +97,6 @@
         <el-form-item label="视频链接" prop="url">
           <el-input v-model="temp.videoUrl" />
         </el-form-item>
-
-<!--        <el-form-item label="视频封面" prop="pic">-->
-<!--          <el-input v-model="temp.videoPic" />-->
-<!--        </el-form-item>-->
-
         <el-form-item label="视频封面">
           <el-upload
             :action="this.$store.state.settings.uploadUrl"
@@ -294,21 +289,8 @@
                 this.filterIsDel = 1
                 this.handleFilter()
             },
-            resetTemp() {
-                this.temp = {
-                    id: undefined,
-                    videoAuthor: "",
-                    videoProfile: '',
-                    videoTitle: '',
-                    videoStatus: '',
-                    videoUrl: '',
-                    videoReviewer: '',
-                    videoPic: '',
-                    updateAt:''
-                }
-            },
             handleCreate() {
-                this.resetTemp()
+                Object.keys(this.temp).forEach(key => (this.temp[key] = ''))
                 this.dialogStatus = 'create'
                 this.dialogFormVisible = true
                 this.$nextTick(() => {
