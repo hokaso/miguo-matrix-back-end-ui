@@ -136,7 +136,7 @@ export const constantRoutes = [
         path: 'record',
         name: 'Record',
         component: () => import('@/views/miniprogram/record/index'),
-        meta: { title: '投票记录（图表）', icon: 'record' }
+        meta: { title: '投票记录', icon: 'record' }
       },
       {
         path: 'swiper',

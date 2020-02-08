@@ -136,7 +136,7 @@
       :no-circle=true
       @crop-upload-success="cropUploadSuccess">
     </my-upload>
-    <el-dialog title="图片预览" :visible.sync="picVisible" width="720px" center>
+    <el-dialog title="图片预览" :visible.sync="picVisible" width="320px" center>
       <div style="text-align: center">
         <img :src="answerPicImageUrl" alt="">
       </div>
@@ -153,7 +153,7 @@
     import MpMerchantApi from "@/api/miniprogram/MpMerchantApi";
     import MpActivityApi from "@/api/miniprogram/MpActivityApi";
     import 'babel-polyfill'; // es6 shim
-    import myUpload from 'vue-image-crop-upload'
+    import myUpload from 'vue-image-crop-upload';
     export default {
         name: 'MpMerchant',
         components: { Pagination, myUpload },

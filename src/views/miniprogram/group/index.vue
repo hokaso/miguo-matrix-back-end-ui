@@ -163,7 +163,7 @@
     import MpGroupApi from "@/api/miniprogram/MpGroupApi";
     import MpActivityApi from "@/api/miniprogram/MpActivityApi";
     import 'babel-polyfill'; // es6 shim
-    import myUpload from 'vue-image-crop-upload'
+    import myUpload from 'vue-image-crop-upload';
     export default {
         name: 'MpGroup',
         components: { Pagination, myUpload },

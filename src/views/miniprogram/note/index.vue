@@ -127,27 +127,6 @@
       </el-table>
     </el-table-editabled>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :size.sync="listQuery.size" @pagination="getList" />
-    <my-upload
-      method="POST"
-      field="file"
-      v-model="cropperShow"
-      :width=150
-      :height=150
-      :url="this.$store.state.settings.uploadUrl"
-      lang-type='zh'
-      img-format='jpg'
-      img-bgc='#FFF'
-      :no-circle=true
-      @crop-upload-success="cropUploadSuccess">
-    </my-upload>
-    <el-dialog title="图片预览" :visible.sync="picVisible" width="720px" center>
-      <div style="text-align: center">
-        <img :src="answerPicImageUrl" alt="">
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="picVisible = false">确定</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
@@ -157,11 +136,10 @@
     import MpNoteApi from "@/api/miniprogram/MpNoteApi";
     import MpActivityApi from "@/api/miniprogram/MpActivityApi";
     import 'babel-polyfill'; // es6 shim
-    import myUpload from 'vue-image-crop-upload';
     import { formatDate } from '@/utils/timeformat.js';
     export default {
         name: 'MpGroup',
-        components: { Pagination, myUpload },
+        components: { Pagination },
         directives: { waves },
         filters: {
             format: (value) =>  formatDate('yyyy-MM-dd hh:mm:ss',new Date(value)),
@@ -242,29 +220,6 @@
                     this.loading = false
                     this.options = data
                 })
-            },
-            // 显示图片上传模块
-            imageCropperShow(row) {
-                this.cropperShow = !this.cropperShow
-                this.temp = Object.assign({}, row) // copy obj
-            },
-            // 图片上传成功后执行
-            cropUploadSuccess(jsonData, field){
-                this.temp.merchantLogo = jsonData.data
-                const tempData = Object.assign({}, this.temp)
-                MpNoteApi.update(tempData).then(() => {
-                    this.$notify({
-                        title: 'success',
-                        message: '图片上传成功',
-                        type: 'success',
-                        duration: 2000
-                    })
-                    this.getList()
-                })
-            },
-            picShow(pic) {
-                this.picVisible = !this.picVisible
-                this.answerPicImageUrl = this.$store.state.settings.callbackUrl + pic
             },
             // 刷新界面
             getList() {

@@ -21,6 +21,11 @@ export default {
       res => res.data
     )
   },
+  findAllByKeywordsFromInput (name) {
+    return HttpKit.get(`/staff_miniprogram/mp_group/find_all_by_keywords_from_input/${name}`).then(
+      res => res.data
+    )
+  },
   update (form) {
     return HttpKit.put(`/staff_miniprogram/mp_group/update`, form).then(
       res => res.data
@@ -28,6 +33,11 @@ export default {
   },
   upload (file) {
     return HttpKit.post(`/picture/upload_mp`, file).then(
+      res => res.data
+    )
+  },
+  findOne (id) {
+    return HttpKit.get(`/staff_miniprogram/mp_group/find_group_id/${id}`).then(
       res => res.data
     )
   }
