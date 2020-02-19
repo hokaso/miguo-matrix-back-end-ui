@@ -4,13 +4,13 @@
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm(1)">
-          送审
+          过审
         </el-button>
-        <el-button v-loading="loading" type="warning" @click="submitForm(3)">
-          保存草稿
+        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm(3)">
+          待定
         </el-button>
         <el-button v-loading="loading" type="warning" @click="submitForm(2)">
-          保存并返回上一层
+          驳回
         </el-button>
       </sticky>
 
@@ -28,6 +28,11 @@
                 <el-col :span="8">
                   <el-form-item label-width="60px" label="作者:" class="postInfo-container-item">
                     <el-input v-model="postForm.author" />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label-width="60px" label="审阅人:" class="postInfo-container-item">
+                    <el-input v-model="postForm.reviewer" />
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -82,6 +87,7 @@
     title: '', // 文章题目
     article: '', // 文章内容
     author: '', // 文章作者
+    reviewer: '' // 文章审核人
   }
   export default {
     components: { Editor,MaterialInput,Sticky },
@@ -237,7 +243,7 @@
                 type: 'success',
                 duration: 2000
               })
-              this.postForm.status = 'reviewing'
+              this.postForm.status = 'reviewed'
               this.loading = false
               if(this.isEdit){
                 this.$router.push({path:'../list'})
@@ -246,14 +252,14 @@
                 this.$router.push({path:'./list'})
               }
             }
-            else if(value === 2) {
+            else if(value === 3) {
               this.$notify({
                 title: '成功',
                 message: '更新成功',
                 type: 'success',
                 duration: 2000
               })
-              this.postForm.status = 'draft'
+              this.postForm.status = 'reviewing'
               this.loading = false
               if(this.isEdit){
                 this.$router.push({path:'../list'})
@@ -269,8 +275,14 @@
                 type: 'success',
                 duration: 2000
               })
-              this.postForm.status = 'draft'
+              this.postForm.status = 'reject'
               this.loading = false
+              if(this.isEdit){
+                this.$router.push({path:'../list'})
+              }
+              else{
+                this.$router.push({path:'./list'})
+              }
             }
           } else {
             console.log('error submit!!')

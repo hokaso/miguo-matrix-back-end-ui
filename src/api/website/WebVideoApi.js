@@ -21,16 +21,6 @@ export default {
       res => res.data
     )
   },
-  findAllDel (form) {
-    return HttpKit.get(`/staff/video/find_all_deleted/${form.page-1}/${form.size}`, form).then(
-      res => res.data
-    )
-  },
-  findAllExist (form) {
-    return HttpKit.get(`/staff/video/find_all_exist/${form.page-1}/${form.size}`, form).then(
-      res => res.data
-    )
-  },
   findAllByKeywords (form) {
     return HttpKit.post(`/staff/video/find_all_by_keywords`, form).then(
       res => res.data

@@ -48,13 +48,11 @@ export const constantRoutes = [
     component: () => import('@/views/login/index'),
     hidden: true
   },
-
   {
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
   },
-
   {
     path: '/',
     component: Layout,
@@ -98,6 +96,12 @@ export const constantRoutes = [
         name: 'WebVideo',
         component: () => import('@/views/website/video/index'),
         meta: { title: '视频发布', icon: 'video' }
+      },
+      {
+        path: 'swiper',
+        name: 'WebSwiper',
+        component: () => import('@/views/website/swiper/index'),
+        meta: { title: '轮播图发布', icon: 'swiper' }
       }
     ]
   },
@@ -167,29 +171,85 @@ export const constantRoutes = [
       }
     ]
   },
+  // {
+  //   path: '/east_staff',
+  //   component: Layout,
+  //   redirect: '/east_staff/staff_list',
+  //   name: 'east_staff',
+  //   meta: { title: '员工健康', icon: 'send' },
+  //   children: [
+  //     {
+  //       path: 'staff_list',
+  //       name: 'Staff_List',
+  //       component: () => import('@/views/covid19/staff_list/index'),
+  //       meta: { title: '员工列表', icon: 'article' }
+  //     },
+  //     {
+  //       path: 'staff_health',
+  //       name: 'Staff_Health',
+  //       component: () => import('@/views/covid19/staff_health/index'),
+  //       meta: { title: '身体状况', icon: 'video' }
+  //     }
+  //   ]
+  // },
   // 404 page must be placed at the end !!!
-  // { path: '*', redirect: '/404', hidden: true }
+  { path: '*', redirect: '/404', hidden: true }
 ]
 
 export const asyncRoutes = [
   {
     path: '/admin_management',
     component: Layout,
-    redirect: '/admin_management/verify',
+    redirect: '/admin_management/subordinate',
     name: 'admin_management',
     meta: { title: '管理员', icon: 'admin', roles: ['admin'] },
     children: [
-      {
-        path: 'verify',
-        name: 'Verify',
-        component: () => import('@/views/admin/verify/index'),
-        meta: { title: '审核', icon: 'verify', roles: ['admin'] }
-      },
       {
         path: 'subordinate',
         name: 'Subordinate',
         component: () => import('@/views/admin/subordinate/index'),
         meta: { title: '人员管理', icon: 'subordinate', roles: ['admin'] }
+      },
+      {
+        path: 'verify',
+        name: 'Verify',
+        component: () => import('@/views/admin/verify/index'),
+        redirect: '/admin_management/verify/article/list',
+        meta: { title: '审核', icon: 'verify', roles: ['admin'] },
+        children: [
+          {
+            path: 'article/create',
+            component: () => import('@/views/admin/verify/article/create'),
+            name: 'VerifyArticleCreate',
+            meta: { title: '文章创建', noCache: true, activeMenu: '/admin_management/verify/article/list', roles: ['admin'] },
+            hidden: true
+          },
+          {
+            path: 'article/edit/:id(\\d+)',
+            name: 'VerifyArticleEdit',
+            component: () => import('@/views/admin/verify/article/edit'),
+            meta: { title: '文章编辑', noCache: true, activeMenu: '/admin_management/verify/article/list', roles: ['admin'] },
+            hidden: true
+          },
+          {
+            path: 'article/list',
+            component: () => import('@/views/admin/verify/article/list'),
+            name: 'VerifyArticle',
+            meta: { title: '文章管理', roles: ['admin'] }
+          },
+          {
+            path: 'video',
+            component: () => import('@/views/admin/verify/video/index'),
+            name: 'VerifyVideo',
+            meta: { title: '视频管理', roles: ['admin'] }
+          },
+          {
+            path: 'swiper',
+            component: () => import('@/views/admin/verify/swiper/index'),
+            name: 'VerifySwiper',
+            meta: { title: '轮播图管理', roles: ['admin'] }
+          }
+        ]
       }
     ]
   }

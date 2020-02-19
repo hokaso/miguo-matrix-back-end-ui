@@ -366,7 +366,7 @@
             // 删除选中数据
             deleteGroup () {
                 MpMerchantApi.del(this.multipleSelection).then(data => {
-                    console.log(data)
+                    console.log(this.multipleSelection)
                     this.getList()
                 })
             },
