@@ -30,6 +30,17 @@
                     <el-input v-model="postForm.author" />
                   </el-form-item>
                 </el-col>
+                <el-col :span="3">
+                  <el-button v-show="!postForm.pic" type="primary" size="mini" @click="imageCropperShow()">
+                    上传图片
+                  </el-button>
+                  <el-button v-show="postForm.pic" type="primary" size="mini" @click="imageCropperShow()">
+                    更新图片
+                  </el-button>
+                  <el-button v-show="postForm.pic" type="primary" size="mini" @click="picShow(postForm.pic)">
+                    预览
+                  </el-button>
+                </el-col>
               </el-row>
             </div>
           </el-col>
@@ -53,6 +64,27 @@
         </el-form-item>
       </div>
     </el-form>
+    <my-upload
+      method="POST"
+      field="file"
+      v-model="cropperShow"
+      :width=320
+      :height=240
+      :url="this.$store.state.settings.uploadUrl"
+      lang-type='zh'
+      img-format='jpg'
+      img-bgc='#FFF'
+      :no-circle=true
+      @crop-upload-success="cropUploadSuccess">
+    </my-upload>
+    <el-dialog title="图片预览" :visible.sync="picVisible" width="400px" center>
+      <div style="text-align: center">
+        <img :src="answerPicImageUrl" alt="">
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="picVisible = false">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -76,15 +108,18 @@
   import MaterialInput from '@/components/MaterialInput'
   import Sticky from '@/components/Sticky' // 粘性header组件
   import WebArticleApi from "@/api/website/WebArticleApi";
+  import 'babel-polyfill'; // es6 shim
+  import myUpload from 'vue-image-crop-upload';
   const defaultForm = {
     id: undefined,
     status: '',
     title: '', // 文章题目
     article: '', // 文章内容
     author: '', // 文章作者
+    pic: '' // 文章头图
   }
   export default {
-    components: { Editor,MaterialInput,Sticky },
+    components: { Editor,MaterialInput,Sticky,myUpload },
     props: {
       isEdit: {
         type: Boolean,
@@ -130,6 +165,9 @@
         }
       }
       return {
+        answerPicImageUrl: "",
+        picVisible: false,
+        cropperShow: false,
         _isEdit: true,
         type: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'],
         status: '',
@@ -146,7 +184,8 @@
           language_url: './static/tinymce/langs/zh_CN.js',
           language: 'zh_CN',
           skin_url: './static/tinymce/skins/ui/oxide',
-          height: 300,
+          height: 900,
+          width: 800,
           plugins: this.plugins,
           toolbar: this.toolbar,
           statusbar: true, // 底部的状态栏
@@ -279,6 +318,28 @@
         })
       },
 
+      // 显示图片上传模块
+      imageCropperShow() {
+        this.cropperShow = !this.cropperShow
+      },
+      // 图片上传成功后执行
+      cropUploadSuccess(jsonData, field){
+        this.postForm.pic = jsonData.data
+        const tempData = Object.assign({}, this.postForm)
+        WebArticleApi.update(tempData).then(() => {
+          this.$notify({
+            title: 'success',
+            message: '图片上传成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList()
+        })
+      },
+      picShow(pic) {
+        this.picVisible = !this.picVisible
+        this.answerPicImageUrl = this.$store.state.settings.callbackUrl + pic
+      },
       // 输入事件
       handleInput(value) {
         // console.log(value)

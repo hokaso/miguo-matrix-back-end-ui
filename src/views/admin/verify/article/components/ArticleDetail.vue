@@ -25,39 +25,72 @@
 
             <div class="postInfo-container">
               <el-row>
-                <el-col :span="8">
+                <el-col :span="6">
                   <el-form-item label-width="60px" label="作者:" class="postInfo-container-item">
                     <el-input v-model="postForm.author" />
                   </el-form-item>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="6">
                   <el-form-item label-width="60px" label="审阅人:" class="postInfo-container-item">
                     <el-input v-model="postForm.reviewer" />
                   </el-form-item>
+                </el-col>
+                <el-col :span="4">
+                  <el-button v-show="!postForm.pic" type="primary" size="mini" @click="imageCropperShow()">
+                    上传图片
+                  </el-button>
+                  <el-button v-show="postForm.pic" type="primary" size="mini" @click="imageCropperShow()">
+                    更新图片
+                  </el-button>
+                  <el-button v-show="postForm.pic" type="primary" size="mini" @click="picShow(postForm.pic)">
+                    预览
+                  </el-button>
                 </el-col>
               </el-row>
             </div>
           </el-col>
         </el-row>
-
-        <el-form-item prop="content" style="margin-bottom: 30px;">
-          <Editor
-            :id="postForm.id"
-            ref="editor"
-            v-model="postForm.article"
-            :init="editorInit"
-            :disabled="isEditorDisabled"
-            @input="handleInput"
-            @onClick="handleClick"
-            :height="400"
-          />
-          <div class="ext-btn" style="margin-top: 30px; float: right">
-            <el-button type="danger" @click="clearClick">清空内容</el-button>
-            <el-button @click="disableClick">{{ !isEditorDisabled ? '禁用' : '启用' }}</el-button>
-          </div>
-        </el-form-item>
+<!--        <div class="editor_container">-->
+          <el-form-item prop="content">
+            <Editor
+              style="text-align: center"
+              :id="postForm.id"
+              ref="editor"
+              v-model="postForm.article"
+              :init="editorInit"
+              :disabled="isEditorDisabled"
+              @input="handleInput"
+              @onClick="handleClick"
+            />
+            <div class="ext-btn" style="margin-top: 30px; float: right">
+              <el-button type="danger" @click="clearClick">清空内容</el-button>
+              <el-button @click="disableClick">{{ !isEditorDisabled ? '禁用' : '启用' }}</el-button>
+            </div>
+          </el-form-item>
+<!--        </div>-->
       </div>
     </el-form>
+    <my-upload
+      method="POST"
+      field="file"
+      v-model="cropperShow"
+      :width=320
+      :height=240
+      :url="this.$store.state.settings.uploadUrl"
+      lang-type='zh'
+      img-format='jpg'
+      img-bgc='#FFF'
+      :no-circle=true
+      @crop-upload-success="cropUploadSuccess">
+    </my-upload>
+    <el-dialog title="图片预览" :visible.sync="picVisible" width="400px" center>
+      <div style="text-align: center">
+        <img :src="answerPicImageUrl" alt="">
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="picVisible = false">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -76,21 +109,29 @@
   import 'tinymce/plugins/table'
   import 'tinymce/plugins/lists'
   import 'tinymce/plugins/paste'
+  import 'tinymce/plugins/hr'
+  // import 'tinymce/plugins/emoticons'
+  import 'tinymce/plugins/fullscreen'
+  import './PasteUpload/index'
   // 字数统计插件
   import 'tinymce/plugins/wordcount'
   import MaterialInput from '@/components/MaterialInput'
   import Sticky from '@/components/Sticky' // 粘性header组件
   import WebArticleApi from "@/api/website/WebArticleApi";
+  import 'babel-polyfill'; // es6 shim
+  import myUpload from 'vue-image-crop-upload';
+
   const defaultForm = {
     id: undefined,
     status: '',
     title: '', // 文章题目
     article: '', // 文章内容
     author: '', // 文章作者
-    reviewer: '' // 文章审核人
+    reviewer: '', // 文章审核人
+    pic: '' // 文章头图
   }
   export default {
-    components: { Editor,MaterialInput,Sticky },
+    components: { Editor,MaterialInput,Sticky,myUpload },
     props: {
       isEdit: {
         type: Boolean,
@@ -98,11 +139,11 @@
       },
       plugins: {
         type: [String, Array],
-        default: 'link lists image code table wordcount paste'
+        default: 'link lists image code table wordcount print paste paste-upload preview fullscreen media template code codesample table charmap hr pagebreak nonbreaking anchor insertdatetime advlist imagetools textpattern help emoticons autosave bdmap indent2em autoresize lineheight formatpainter axupimgs'
       },
       toolbar: {
         type: [String, Array],
-        default: 'bold italic underline strikethrough | fontsizeselect | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent blockquote | undo redo | link unlink image code | removeformat'
+        default: 'bold italic underline strikethrough paste-upload | fontsizeselect | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent blockquote | undo redo | link unlink image code | removeformat hr fullscreen'
       },
       menubar: {
         type: String,
@@ -136,6 +177,9 @@
         }
       }
       return {
+        answerPicImageUrl: "",
+        picVisible: false,
+        cropperShow: false,
         _isEdit: true,
         type: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'],
         status: '',
@@ -152,12 +196,21 @@
           language_url: './static/tinymce/langs/zh_CN.js',
           language: 'zh_CN',
           skin_url: './static/tinymce/skins/ui/oxide',
-          height: 300,
+          height: 800,
+          width: 800,
           plugins: this.plugins,
           toolbar: this.toolbar,
           statusbar: true, // 底部的状态栏
           menubar: true, // 最上方的菜单
           branding: false, // 水印“Powered by TinyMCE”
+          pasteUploadConfig: {
+            url: this.$store.state.settings.uploadUrl,
+            diyExtractUrl: true,
+            extractUrlFun: (res) => {
+              // console.log(res.data)
+              return this.$store.state.settings.callbackUrl + res.data + '';
+            }
+          },
           images_upload_handler: (blobInfo, success, failure) => {
             // const img = 'data:image/png;base64,' + blobInfo.base64()
             // success(img)
@@ -290,6 +343,28 @@
           }
         })
       },
+      // 显示图片上传模块
+      imageCropperShow() {
+        this.cropperShow = !this.cropperShow
+      },
+      // 图片上传成功后执行
+      cropUploadSuccess(jsonData, field){
+        this.postForm.pic = jsonData.data
+        const tempData = Object.assign({}, this.postForm)
+        WebArticleApi.update(tempData).then(() => {
+          this.$notify({
+            title: 'success',
+            message: '图片上传成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList()
+        })
+      },
+      picShow(pic) {
+        this.picVisible = !this.picVisible
+        this.answerPicImageUrl = this.$store.state.settings.callbackUrl + pic
+      },
 
       // 输入事件
       handleInput(value) {
@@ -338,6 +413,7 @@
       top: 0px;
     }
   }
+
 
   .article-textarea /deep/ {
     textarea {
