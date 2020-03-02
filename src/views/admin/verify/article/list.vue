@@ -219,6 +219,10 @@
         row.isDel = active
         this.temp = Object.assign({}, row) // copy obj
         WebArticleApi.update(this.temp)
+        // 至于为什么不用以下方法，是因为懒得重写接口了，反正不是高并发项目……
+        // WebArticleApi.delSome(this.temp.id)
+        // 这里提供一个改进方案：新增一个包含id和active的对象，更新接口delSome为POST上传这个对象给后端做判断
+        // 说句实在话，目前这个方法也就是数据传输量多了点，后端bean拷贝的时候识别到一样的不会执行拷贝，所以效率也不会提高多少
         this.listLoading = false
         this.$message({
           message: '操作成功',
