@@ -33,4 +33,19 @@ export default {
       res => res.data
     )
   },
+  findClassMediaVideo (form) {
+    return HttpKit.post(`/admin/media_video/find_all_class`, form).then(
+      res => res.data
+    )
+  },
+  findAllMediaVideo (form) {
+    return HttpKit.post(`/admin/media_video/find_all`, form).then(
+      res => res.data
+    )
+  },
+  mediaVideoDistribution (form) {
+    return HttpKit.put(`/admin/media_video/distribution`, form).then(
+      res => res.data
+    )
+  }
 }

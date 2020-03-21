@@ -8,6 +8,9 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         新增
       </el-button>
+      <el-select v-model="filterIsDel" style="width: 140px" class="filter-item" @change="handleFilter">
+        <el-option v-for="item in filterMap" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
     </div>
     <el-table
       :key="tableKey"
@@ -21,7 +24,7 @@
     >
       <el-table-column label="发布日期" prop="date" sortable="custom" width="200px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.updateAt }}</span>
+          <span>{{ row.createAt }}</span>
         </template>
       </el-table-column>
       <el-table-column label="视频标题" min-width="120px" align="center">
@@ -29,39 +32,29 @@
           <span>{{ row.videoTitle }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="创作团队" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.videoAuthor }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="视频链接" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.videoUrl }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="视频简介" max-width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.videoProfile }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="审核人" width="100px" align="center">
+
+      <el-table-column label="分发" align="center" width="300px" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <span style="color:orange;">{{ row.videoReviewer }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" class-name="status-col" width="100px">
-        <template slot-scope="{row}">
-          <el-tag :type="row.videoStatus | statusFilter">
-            {{ row.videoStatus | statusNameFilter}}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="300px" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button v-if="row.videoStatus!=='reviewed' && row.videoStatus!=='reviewing' && row.videoStatus!=='processing' && row.videoStatus!=='complete'" type="primary" size="mini" @click="handleUpdate(row)">
-            编辑
+          <el-button v-if="row.videoStatus==='reviewed'" size="mini" type="success" @click="handleModifyStatus(row,'processing')">
+            分发
           </el-button>
-          <el-button v-if="row.videoStatus!=='reviewed' && row.videoStatus!=='reviewing' && row.videoStatus!=='reject' && row.videoStatus!=='processing' && row.videoStatus!=='complete'" size="mini" type="success" @click="handleModifyStatus(row,'reviewing')">
-            提审
-          </el-button>
-          <el-button v-if="row.videoStatus!=='draft' && row.videoStatus!=='reviewed' && row.videoStatus!=='reject' && row.videoStatus!=='processing' && row.videoStatus!=='complete'" size="mini" @click="handleModifyStatus(row,'draft')">
-            撤回
-          </el-button>
-          <el-button v-if="row.videoStatus!=='reviewed' && row.videoStatus!=='reviewing' && row.videoStatus!=='reject' && row.videoStatus!=='processing' && row.videoStatus!=='complete'" size="mini" type="danger" @click="confirmDelete(row)">
-            删除
-          </el-button>
-          <el-tag v-if="row.videoStatus==='reviewed'">
-            已通过审核，当前权限无法进行其他操作
+          <el-tag v-if="row.videoStatus!=='reviewed' && row.videoStatus!=='processing' && row.videoStatus!=='complete'">
+            请先通过审核
           </el-tag>
           <el-tag v-if="row.videoStatus==='complete'" :type="row.videoStatus | statusFilter">
             已分发
@@ -71,10 +64,44 @@
           </el-tag>
         </template>
       </el-table-column>
+
+      <el-table-column label="状态" class-name="status-col" width="100px">
+        <template slot-scope="{row}">
+          <el-tag :type="row.videoStatus | statusFilter">
+            {{ row.videoStatus | statusNameFilter}}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="300px" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button v-show="row.videoStatus==='reviewing'" type="primary" size="mini" @click="handleUpdate(row)">
+            审阅
+          </el-button>
+          <el-button v-show="row.videoStatus==='reviewed'" size="mini" type="success" @click="handleUpdate(row)">
+            修改
+          </el-button>
+          <el-button v-show="row.videoStatus==='reject'" size="mini" @click="handleModifyStatus(row,'reviewing')">
+            待定
+          </el-button>
+          <el-button v-show="row.videoStatus==='reviewed'" size="mini" type="danger" @click="handleModifyStatus(row,'reject')">
+            驳回
+          </el-button>
+          <el-tag v-show="row.videoStatus==='processing'" :type="row.videoStatus | statusFilter">
+            分发中
+          </el-tag>
+          <el-tag v-show="row.videoStatus==='complete'" :type="row.videoStatus | statusFilter">
+            已分发
+          </el-tag>
+        </template>
+      </el-table-column>
     </el-table>
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :size.sync="listQuery.size" @pagination="getList" />
+
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 600px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="审核人" prop="videoReviewer">
+          <el-input v-model="temp.videoReviewer" />
+        </el-form-item>
         <el-form-item label="视频标题" prop="videoTitle">
           <el-input v-model="temp.videoTitle" />
         </el-form-item>
@@ -141,19 +168,19 @@
           </el-input>
           <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新标签</el-button>
         </el-form-item>
-
-        <el-form-item label="视频状态" prop="videoStatus">
-          <el-select v-model="temp.videoStatus" class="filter-item" placeholder="保存草稿/提交审核" value="">
-            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="handleCancel()">
           取消
         </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          确认
+        <el-button v-if="temp.videoStatus!=='reviewed'" type="primary" @click="dialogStatus==='create'?createData():updateData('reviewed')">
+          过审
+        </el-button>
+        <el-button v-if="dialogStatus!=='create' && temp.videoStatus!=='reviewed'" type="danger" @click="updateData('reject')">
+          驳回
+        </el-button>
+        <el-button v-if="temp.videoStatus==='reviewed'" type="primary" @click="updateData('reviewed')">
+          保存
         </el-button>
       </div>
     </el-dialog>
@@ -192,10 +219,12 @@
   import waves from '@/directive/waves' // waves directive
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
   import MediaVideoApi from "@/api/media/MediaVideoApi";
+  import WebVerifyApi from "@/api/admin/WebVerifyApi";
   import 'babel-polyfill'; // es6 shim
   import myUpload from 'vue-image-crop-upload';
+
   export default {
-    name: 'media_video',
+    name: 'VerifyMediaVideo',
     components: { Pagination, myUpload },
     directives: { waves },
     filters: {
@@ -204,7 +233,7 @@
           reviewing: '审核中',
           draft: '草稿',
           reviewed: '已审核',
-          reject: '被驳回',
+          reject: '驳回',
           processing: '分发中',
           complete: '分发完毕'
         }
@@ -239,7 +268,8 @@
           page: 1,
           size: 20,
           keywords: "",
-          direction: 'DESC'
+          direction: 'DESC',
+          active: ''
         },
         // 已过审的不允许删除和存为草稿和提交审核
         statusOptions: [{
@@ -256,8 +286,8 @@
           label: '搞笑',
           value: '138'
         }, {
-            label: '美食',
-            value: '76'
+          label: '美食',
+          value: '76'
         }, {
           label: '科普',
           value: '124'
@@ -284,7 +314,9 @@
           videoClass: '',
           videoTag: [],
           videoPath: '',
-          updateAt:''
+          updateAt:'',
+          createAt:'',
+          IsDel: ''
         },
         videoTagTemp: undefined,
         dialogFormVisible: false,
@@ -293,21 +325,16 @@
           update: '编辑',
           create: '创建'
         },
-        filterMap: [{
-          label: '全部',
-          value: 1
-        }, {
-          label: '未删除',
-          value: 2
-        }, {
-          label: '已删除',
-          value: 3
-        }],
+        filterMap: [
+          { label: '全部', value: 1 },
+          { label: '未分发', value: 'false' },
+          { label: '已分发', value: 'true'}
+        ],
         rules: {
           videoTitle: [{ required: true, message: '标题为必填项', trigger: 'blur' }],
+          videoReviewer: [{ required: true, message: '审核人为必填项', trigger: 'blur' }],
           videoProfile: [{ required: true, message: '简介为必填项', trigger: 'blur' }],
           videoClass: [{ required: true, message: '分类为必填项', trigger: 'change' }],
-          videoStatus: [{ required: true, message: '状态为必填项', trigger: 'change' }],
           videoPic: [{ required: true, message: '封面图为必填项', trigger: 'change' }],
           videoPath: [{ required: true, message: '视频必须上传', trigger: 'change' }],
         },
@@ -323,39 +350,28 @@
       // 刷新界面
       getList() {
         this.listLoading = true
-        MediaVideoApi.findAllByKeywords(this.listQuery).then(data => {
-          this.list = data.data
-          this.total = data.total;
-          Object.keys(this.list).forEach(key => (this.list[key].videoTag =  JSON.parse(this.list[key].videoTag)))
-        })
+        if(this.filterIsDel === 1){
+          WebVerifyApi.findAllMediaVideo(this.listQuery).then(data => {
+            this.list = data.data
+            this.total = data.total;
+            Object.keys(this.list).forEach(key => (this.list[key].videoTag =  JSON.parse(this.list[key].videoTag)))
+          })
+        }
+        else{
+          this.listQuery.active = this.filterIsDel
+          WebVerifyApi.findClassMediaVideo(this.listQuery).then(data => {
+            this.list = data.data
+            this.total = data.total;
+            Object.keys(this.list).forEach(key => (this.list[key].videoTag =  JSON.parse(this.list[key].videoTag)))
+          })
+        }
         this.listLoading = false
       },
       handleFilter() {
         this.listQuery.page = 1
         this.getList()
       },
-      handleModifyStatus(row, status) {
-        this.listLoading = true
-        row.videoStatus = status
-        this.temp = Object.assign({}, row) // copy obj
-        this.videoTagTemp = this.temp.videoTag
-        this.temp.videoTag = JSON.stringify(this.temp.videoTag)
-        MediaVideoApi.update(this.temp).then(() => {
-          for (const v of this.list) {
-            if (v.id === this.temp.id) {
-              const index = this.list.indexOf(v)
-              this.list.splice(index, 1, this.temp)
-              break
-            }
-          }
-          this.temp.videoTag = this.videoTagTemp
-        })
-        this.listLoading = false
-        this.$message({
-          message: '操作成功',
-          type: 'success'
-        })
-      },
+
       sortChange(data) {
         const { prop, order } = data
         if (prop === 'date') {
@@ -385,12 +401,13 @@
       createData() {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.temp.videoStatus = 'reviewed'
             this.videoTagTemp = this.temp.videoTag
             this.dialogFormVisible = false
             this.temp.videoTag = JSON.stringify(this.temp.videoTag)
             const tempData = Object.assign({}, this.temp)
             this.temp.videoTag = this.videoTagTemp
-            MediaVideoApi.add(tempData).then(() => {
+              MediaVideoApi.add(tempData).then(() => {
               this.list.unshift(this.temp)
               this.getList()
               this.$notify({
@@ -417,14 +434,30 @@
           this.$refs['dataForm'].clearValidate()
         })
       },
-      handleCancel(){
-        this.dialogFormVisible = false
-        this.answerPicImageUrl = ''
-        this.answerVideoUrl = ''
+      handleModifyStatus(row, status) {
+        this.listLoading = true
+        row.videoStatus = status
+        this.temp = Object.assign({}, row) // copy obj
+        this.videoTagTemp = this.temp.videoTag
+        this.temp.videoTag = JSON.stringify(this.temp.videoTag)
+        const tempData = Object.assign({}, this.temp)
+        this.temp.videoTag = this.videoTagTemp
+        if(this.temp.videoStatus === 'processing'){
+          WebVerifyApi.mediaVideoDistribution(tempData).then(() => {})
+        }
+        else{
+          MediaVideoApi.update(tempData).then(() => {})
+        }
+        this.listLoading = false
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
       },
-      updateData() {
+      updateData(status) {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.temp.videoStatus = status
             this.videoTagTemp = this.temp.videoTag
             this.dialogFormVisible = false
             this.temp.videoTag = JSON.stringify(this.temp.videoTag)
@@ -441,6 +474,11 @@
             })
           }
         })
+      },
+      handleCancel(){
+        this.dialogFormVisible = false
+        this.answerPicImageUrl = ''
+        this.answerVideoUrl = ''
       },
       confirmDelete(row) {
         // this.delVisible = true
@@ -461,23 +499,17 @@
         const index = this.list.indexOf(row)
         this.list.splice(index, 1)
       },
-      picShow(pic) {
-        this.picVisible = !this.picVisible
-        this.answerPicImageUrl = this.$store.state.settings.callbackUrl + pic
+      answerPicImageSuccess (res, file) {
+        this.temp.videoPic = res.data
+        this.answerPicImageUrl = URL.createObjectURL(file.raw)
       },
-      // 显示图片上传模块
-      imageCropperShow() {
-        this.cropperShow = !this.cropperShow
-      },
-      // 图片上传成功后执行
-      cropUploadSuccess(jsonData, field){
-        this.temp.videoPic = jsonData.data
-        this.$notify({
-          title: 'success',
-          message: '图片上传成功',
-          type: 'success',
-          duration: 2000
-        })
+      beforeUpload (file) {
+        // 只允许上传2GB以内大小的图片
+        const isLt2G = file.size / 1024 / 1024 / 1024 < 2;
+        if (!isLt2G) {
+          this.$message.error('上传视频大小不能超过2GB!');
+        }
+        return isLt2G;
       },
       handleClose(tag) {
         this.temp.videoTag.splice(this.temp.videoTag.indexOf(tag), 1);
@@ -497,13 +529,23 @@
         this.inputVisible = false;
         this.inputValue = '';
       },
-      beforeUpload (file) {
-        // 只允许上传2GB以内大小的图片
-        const isLt2G = file.size / 1024 / 1024 / 1024 < 2;
-        if (!isLt2G) {
-          this.$message.error('上传视频大小不能超过2GB!');
-        }
-        return isLt2G;
+      picShow(pic) {
+        this.picVisible = !this.picVisible
+        this.answerPicImageUrl = this.$store.state.settings.callbackUrl + pic
+      },
+      // 显示图片上传模块
+      imageCropperShow() {
+        this.cropperShow = !this.cropperShow
+      },
+      // 图片上传成功后执行
+      cropUploadSuccess(jsonData, field){
+        this.temp.videoPic = jsonData.data
+        this.$notify({
+          title: 'success',
+          message: '图片上传成功',
+          type: 'success',
+          duration: 2000
+        })
       },
       uploadVideoProcess(event, file, fileList){
         this.videoFlag = true;

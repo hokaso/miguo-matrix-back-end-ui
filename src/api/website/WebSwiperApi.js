@@ -11,11 +11,6 @@ export default {
       res => res.data
     )
   },
-  delSome (ids) {
-    return HttpKit.delete(`/staff/web_swiper/delete/${ids}`).then(
-      res => res.data
-    )
-  },
   delOne (id) {
     return HttpKit.delete(`/staff/web_swiper/delete_one/${id}`).then(
       res => res.data

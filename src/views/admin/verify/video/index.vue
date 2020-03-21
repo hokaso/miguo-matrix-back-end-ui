@@ -29,8 +29,7 @@
       </el-table-column>
       <el-table-column label="视频标题" min-width="120px" align="center">
         <template slot-scope="{row}">
-          <span v-if="row.videoStatus==='reviewed' || row.videoStatus==='reviewing'">{{ row.videoTitle }}</span>
-          <span v-else class="link-type" @click="handleUpdate(row)">{{ row.videoTitle }}</span>
+          <span>{{ row.videoTitle }}</span>
         </template>
       </el-table-column>
       <el-table-column label="创作团队" width="100px" align="center">
@@ -113,7 +112,7 @@
             prop="pic"
             accept="image/png,image/gif,image/jpg,image/jpeg"
             class="upload-demo" style="margin-top: 5%">
-            <img v-if="answerPicImageUrl" :src="answerPicImageUrl">
+            <img v-if="answerPicImageUrl" :src="answerPicImageUrl" class="video-pic-image">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           </el-upload>
@@ -151,7 +150,7 @@
   import WebVerifyApi from "@/api/admin/WebVerifyApi";
 
   export default {
-    name: 'bbb',
+    name: 'VerifyVideo',
     components: { Pagination },
     directives: { waves },
     filters: {

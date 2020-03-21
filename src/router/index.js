@@ -161,13 +161,13 @@ export const constantRoutes = [
         path: 'article',
         name: 'Article',
         component: () => import('@/views/media/article/index'),
-        meta: { title: '文章发布', icon: 'article' }
+        meta: { title: '文章分发', icon: 'article' }
       },
       {
         path: 'video',
         name: 'Video',
         component: () => import('@/views/media/video/index'),
-        meta: { title: '视频发布', icon: 'video' }
+        meta: { title: '视频分发', icon: 'video' }
       }
     ]
   },
@@ -215,7 +215,7 @@ export const asyncRoutes = [
         name: 'Verify',
         component: () => import('@/views/admin/verify/index'),
         redirect: '/admin_management/verify/article/list',
-        meta: { title: '审核', icon: 'verify', roles: ['admin'] },
+        meta: { title: '官网审核', icon: 'verify', roles: ['admin'] },
         children: [
           {
             path: 'article/create',
@@ -235,19 +235,40 @@ export const asyncRoutes = [
             path: 'article/list',
             component: () => import('@/views/admin/verify/article/list'),
             name: 'VerifyArticle',
-            meta: { title: '文章管理', roles: ['admin'] }
+            meta: { title: '文章管理', roles: ['admin'], icon: 'article'}
           },
           {
             path: 'video',
             component: () => import('@/views/admin/verify/video/index'),
             name: 'VerifyVideo',
-            meta: { title: '视频管理', roles: ['admin'] }
+            meta: { title: '视频管理', roles: ['admin'], icon: 'video' }
           },
           {
             path: 'swiper',
             component: () => import('@/views/admin/verify/swiper/index'),
             name: 'VerifySwiper',
-            meta: { title: '轮播图管理', roles: ['admin'] }
+            meta: { title: '轮播图管理', roles: ['admin'], icon: 'swiper' }
+          }
+        ]
+      },
+      {
+        path: 'media_verify',
+        name: 'MediaVerify',
+        component: () => import('@/views/admin/media/index'),
+        redirect: '/admin_management/media_verify/video/index',
+        meta: { title: '分发审核', icon: 'verify', roles: ['admin'] },
+        children: [
+          {
+            path: 'video',
+            component: () => import('@/views/admin/media/video/index'),
+            name: 'VerifyMediaVideo',
+            meta: { title: '视频分发', roles: ['admin'], icon: 'video' }
+          },
+          {
+            path: 'swiper',
+            component: () => import('@/views/admin/verify/swiper/index'),
+            name: 'VerifySwiper',
+            meta: { title: '*未定义*', roles: ['admin'], icon: 'swiper' }
           }
         ]
       }

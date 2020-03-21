@@ -21,10 +21,21 @@ router.beforeEach(async(to, from, next) => {
   else {
     // determine whether the user has obtained his permission roles through getInfo
     const hasRoles = store.getters.roles && store.getters.roles.length > 0
+    const cacheRoles = sessionStorage.getItem('user')
     if (hasRoles && store.getters.has_routes) {
+      // console.log("1")
       next()
     }
+    else if(cacheRoles && cacheRoles!==''){
+      // 刷新後執行
+      await store.dispatch('user/getInfo', cacheRoles)
+      await store.dispatch('permission/getRoutes')
+      const accessRoutes = await store.dispatch('permission/generateRoutes', store.getters.roles)
+      router.addRoutes(accessRoutes)
+      next({ ...to, replace: true })
+    }
     else if (hasRoles) {
+      // console.log("2")
       try {
         // get user info
         // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
@@ -47,6 +58,7 @@ router.beforeEach(async(to, from, next) => {
         NProgress.done()
       }
     }
+
     else {
       next(`/login?redirect=${to.path}`)
       NProgress.done()

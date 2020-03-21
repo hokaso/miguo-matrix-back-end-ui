@@ -1,6 +1,8 @@
 import {Message} from 'element-ui'
 import axios from 'axios'
-axios.defaults.withCredentials=true;
+import store from '../store'
+import router from '../router'
+axios.defaults.withCredentials=true
 
 axios.defaults.baseURL = process.env.HOME_URL
 axios.defaults.timeout = 30 * 1000 // 设置接口响应时间
@@ -21,27 +23,36 @@ axios.interceptors.request.use((config) => {
 axios.interceptors.response.use((res) => {
   let isTips = res.config.showMessage === undefined || res.config.showMessage === true
   let data = res.data
-
+  // console.log(res)
   /* 根据返回的code值来做不同的处理（和后端约定） */
   switch (data.code) {
     case 200:
+      return Promise.resolve(data)
+    case 401:
+      // console.log("32454354")
       return Promise.resolve(data)
     default:
       isTips && Message.error(`服务器返回异常：${data.message}`, 10)
       return Promise.reject(res)
   }
 }, (error) => {
-  Message.error(`服务器返回异常：${error}`, 10)
-
+  // Message.error(`服务器返回异常：${error}`, 10)
   if (error && error.response) {
     switch (error.response.status) {
       case 400:
+        break
+      case 401:
+        // console.log("false")
+        Message.warning('还没登录或账号已经过期')
+        sessionStorage.setItem('user',null)
+        store.dispatch('user/userLogout').then(r => {})
+        store.dispatch('permission/clearRoutes').then(r => {})
+        router.push(`/login`)
         break
       default:
         break
     }
   }
-
   return Promise.reject(error)
 })
 

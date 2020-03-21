@@ -106,8 +106,8 @@
             drag
             prop="pic"
             accept="image/png,image/gif,image/jpg,image/jpeg"
-            class="upload-demo" style="margin-top: 5%">
-            <img v-if="answerPicImageUrl" :src="answerPicImageUrl">
+            style="margin-top: 5%;">
+            <img v-if="answerPicImageUrl" :src="answerPicImageUrl" alt="" class="video-pic-image">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
           </el-upload>
