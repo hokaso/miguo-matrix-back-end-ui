@@ -14,6 +14,21 @@ export default {
     return HttpKit.post(`/account/logout`, form).then(
       res => res.data
     )
+  },
+  getSelfInfo () {
+    return HttpKit.post(`/staff/account/find_one`, "a").then(
+      res => res.data
+    )
+  },
+  setSelfInfo (form) {
+    return HttpKit.post(`/staff/account/update`, form).then(
+      res => res.data
+    )
+  },
+  getCount () {
+    return HttpKit.post(`/count/quality`, "a").then(
+      res => res.data
+    )
   }
 }
 

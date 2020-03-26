@@ -7,10 +7,10 @@ const state = {
   fixedHeader: fixedHeader,
   tagsView: tagsView,
   sidebarLogo: sidebarLogo,
-  uploadUrl: 'http://localhost:9090/picture/upload/',
-  mpUploadUrl: 'http://localhost:9090/picture/upload_mp/',
-  callbackUrl: 'http://localhost:9090/file/',
-  mpCallbackUrl: 'http://localhost:9090/file/thumbnails/mp'
+  uploadUrl: process.env.HOME_URL + '/picture/upload/',
+  mpUploadUrl: process.env.HOME_URL + '/picture/upload_mp/',
+  callbackUrl: process.env.HOME_URL + '/file/',
+  mpCallbackUrl: process.env.HOME_URL +  '/file/thumbnails/mp'
 }
 
 const mutations = {

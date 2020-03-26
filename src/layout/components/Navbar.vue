@@ -16,15 +16,39 @@
               回到主页
             </el-dropdown-item>
           </router-link>
-          <a target="_blank" href="https://migotimes.com/#/home">
+          <a target="_blank" href="http://migotimes.com/#/home">
             <el-dropdown-item>前往官网</el-dropdown-item>
           </a>
+          <el-dropdown-item>
+            <span style="display:block;" @click="handleEdit">修改信息</span>
+          </el-dropdown-item>
           <el-dropdown-item divided>
             <span style="display:block;" @click="logout">注销</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <el-dialog title="修改个人信息" :visible.sync="dialogFormVisible">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="姓名" prop="name">
+          <el-input v-model="temp.name" />
+        </el-form-item>
+        <el-form-item label="昵称" prop="nickname">
+          <el-input v-model="temp.nickname" />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="temp.password" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="updateData">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -44,13 +68,51 @@
         'sidebar',
       ])
     },
+    data() {
+      return {
+        temp: {
+          id: "",
+          name: "",
+          nickname: "",
+          password: "",
+          level: undefined
+        },
+        dialogFormVisible: false,
+        rules: {
+          name: [{ required: true, message: '姓名为必填项', trigger: 'blur' }],
+          nickname: [{ required: true, message: '昵称为必填项', trigger: 'blur' }],
+          password: [{ required: true, message: '密码为必填项', trigger: 'blur' }],
+        },
+      }
+    },
     methods: {
+      handleEdit(){
+        LoginApi.getSelfInfo().then(data => {
+          this.temp.id = data.id
+          this.temp.name = data.name
+          this.temp.nickname = data.nickname
+          this.temp.password = data.password
+          this.temp.level = data.level
+        })
+        this.dialogFormVisible = true
+      },
+      updateData(){
+        LoginApi.setSelfInfo(this.temp).then(data => {
+          console.log(data)
+        })
+        this.dialogFormVisible = false
+        this.$notify({
+          title: 'success',
+          message: '创建成功',
+          type: 'success',
+          duration: 2000
+        })
+      },
       toggleSideBar() {
         this.$store.dispatch('app/toggleSideBar')
       },
       async logout() {
         await LoginApi.logout().then(data => {
-          console.log(data)
           sessionStorage.setItem('user',null)
           this.$store.dispatch('user/userLogout')
           this.$store.dispatch('permission/clearRoutes')
