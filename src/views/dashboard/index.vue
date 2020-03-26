@@ -133,6 +133,9 @@
 </script>
 
 <style>
+  .el-row {
+    margin-bottom: 30px;
+  }
   .dashboard-container{
     margin: 40px 60px 30px 60px;
   }

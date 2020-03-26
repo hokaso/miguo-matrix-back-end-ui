@@ -265,10 +265,10 @@ export const asyncRoutes = [
             meta: { title: '视频分发', roles: ['admin'], icon: 'video' }
           },
           {
-            path: 'swiper',
-            component: () => import('@/views/admin/verify/swiper/index'),
-            name: 'VerifySwiper',
-            meta: { title: '*未定义*', roles: ['admin'], icon: 'swiper' }
+            path: 'article',
+            component: () => import('@/views/admin/media/article/index'),
+            name: 'VerifyMediaArticle',
+            meta: { title: '文章分发', roles: ['admin'], icon: 'article' }
           }
         ]
       }
