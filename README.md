@@ -1,21 +1,21 @@
-# miguo-matrix-back-end-ui
+# 米果新媒体矩阵员工管理前端
 
-> Let the world see your value.
+详细说明：https://hocassian.cn/archives/tech/7895/
 
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+除了最重要的客户前端（官网），管理前端也是不可缺少的。它负责管理官网，以及小程序乃至媒体分发的各项数据，是整个系统的控制核心。
+### (1) 员工功能。
+管理系统的员工需要对上述各项内容进行增删查改（Create & Retrieve & Update & Delete, CRUD），不过仅限于修改部分数据，各条目最终是否展示或分发取决于管理员的审核。图3-5展示了该页面的大致设计与布局，其中员工可进行如下操作：
+① 官网的文章、视频、轮播图的增删查改；
+② 小程序的活动、投票对象、赞助商、公告信息、投票记录、轮播图的增删查改；
+③ 内容分发的文章、视频的增删查改；
+④ 个人信息的修改；
+### (2) 管理员功能。
+管理员除了具备所有普通员工已有的权限外，还具有审核员工发布的内容的功能，以及对员工的管理，图3-6展示了该页面的大致设计与布局，详情如下：
+① 员工的增删，其中删除为软删除，后期可恢复；
+② 用户的分权，可以定义用户为普通员工或管理员；
+③ 网站内容的审核，对员工发布的文章、视频、轮播图的审核，可驳回、待定或通过。
+④ 网站内容的上架，对已审核文章、视频进行上架或下架操作。
+⑤ 分发内容的审核，对员工发布的文章、视频进行审核，可驳回、待定或通过。
+其中当分发内容通过审核后，将由分发后端推送至各大众平台，各平台过审后返回视频源，同时更新数据至网站媒体表，员工需对返回的条目作二次修改，且管理员需二次审核才能发布到官网。
+### (3) 登陆功能。
+每位用户都需要通过该功能获取权限来进入系统，若填写的登陆信息（账号和密码）与数据库里保存的不一致，系统会提示用户重新输入；不同用户组仅可访问自己权限下的内容。
