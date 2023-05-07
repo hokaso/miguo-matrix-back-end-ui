@@ -22,7 +22,7 @@
     "npm": "^6.13.4",
     "nprogress": "^0.2.0",
     "path-to-regexp": "latest",
-    "tinymce": "^5.1.5",
+    "tinymce": "^5.10.7",
     "vue": "^2.5.2",
     "vue-image-crop-upload": "^2.5.0",
     "vue-material-input": "^1.2.0",
